@@ -485,6 +485,22 @@ class alignas(sizeof(T) * 2) Vector2
             return right_typed;
         }
     }
+
+    template <typename U = T
+#ifndef MATH_CONCEPTS_ENABLED
+        , typename = std::enable_if_t<std::is_floating_point_v<U>>
+#endif
+    >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires FloatingPoint<U>
+#endif
+    [[nodiscard]] static constexpr auto infinity_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        static const ImmutableVector2<U> infinity_typed{std::numeric_limits<U>::infinity(),
+                                                        std::numeric_limits<U>::infinity()};
+        return infinity_typed;
+    }
+
     // --
     T x, y;
 };
