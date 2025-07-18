@@ -1,6 +1,7 @@
 #ifndef LIB_UMATH_VEC2_HPP_a5enmn
 #define LIB_UMATH_VEC2_HPP_a5enmn
 
+#include <cmath>
 #include <type_traits>
 #include <umath/umath.hpp>
 
@@ -51,6 +52,34 @@ struct is_vector2_like_impl<T, void>
 template <typename T, typename ValueType = void>
 inline constexpr bool is_vector2_like_v =
     is_vector2_like_impl<T, ValueType>::value;
+
+template <typename T>
+constexpr T fast_inverse_sqrt(T x) noexcept
+{
+    if constexpr (std::is_same_v<T, float>)
+    {
+        if (std::is_constant_evaluated())
+        {
+            return T{1} / std::sqrt(x);
+        }
+        else
+        {
+            union
+            {
+                float f;
+                uint32_t i;
+            } conv = {x};
+            conv.i = 0x5f3759df - (conv.i >> 1);
+            conv.f *= T{1.5} - (x * T{0.5} * conv.f * conv.f);
+            conv.f *= T{1.5} - (x * T{0.5} * conv.f * conv.f);
+            return conv.f;
+        }
+    }
+    else
+    {
+        return T{1} / std::sqrt(x);
+    }
+}
 
 } // namespace detail
 } // namespace umath
