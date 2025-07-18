@@ -546,10 +546,48 @@ class alignas(sizeof(T) * 2) Vector2
     {
         return RIGHT;
     }
-    
+
     static constexpr const Vector2& infinity_vec() noexcept
     {
         return INFINITY_VEC;
+    }
+
+    template <typename U>
+    static constexpr Vector2 from(const Vector2<U>& other) noexcept
+    {
+        return Vector2{static_cast<T>(other.x), static_cast<T>(other.y)};
+    }
+
+    template <typename Container>
+    static constexpr Vector2 from_array(const Container& arr, size_type offset = 0)
+    {
+        return Vector2{static_cast<T>(arr[offset]), static_cast<T>(arr[offset + 1])};
+    }
+
+    static constexpr Vector2 create(T x_val = T{}, T y_val = T{}) noexcept
+    {
+        return Vector2{x_val, y_val};
+    }
+
+    constexpr void set(T x_val, T y_val) noexcept
+    {
+        x = x_val;
+        y = y_val;
+    }
+
+    constexpr void set_x(T value) noexcept
+    {
+        x = value;
+    }
+    
+    constexpr void set_y(T value) noexcept
+    {
+        y = value;
+    }
+
+    constexpr Vector2 clone() const noexcept
+    {
+        return *this;
     }
 
     // --
