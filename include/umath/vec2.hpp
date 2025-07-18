@@ -2,6 +2,7 @@
 #define LIB_UMATH_VEC2_HPP_a5enmn
 
 #include <cmath>
+#include <random>
 #include <type_traits>
 #include <umath/umath.hpp>
 
@@ -81,6 +82,25 @@ constexpr T fast_inverse_sqrt(T x) noexcept
     }
 }
 
+template <typename T>
+constexpr bool
+approximately_equal(T a, T b, T tolerance = numeric_traits<T>::epsilon) noexcept
+{
+    if constexpr (std::is_floating_point_v<T>)
+    {
+        return std::abs(a - b) <=
+               tolerance * std::max({T{1}, std::abs(a), std::abs(b)});
+    }
+    else
+    {
+        return a == b;
+    }
+}
+
+inline std::random_device rd;
+inline std::mt19937 gen{rd()};
+inline std::normal_distribution<double> normal_dist{0.0, 1.0};
+inline std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
 } // namespace detail
 } // namespace umath
 
