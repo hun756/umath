@@ -806,6 +806,66 @@ class alignas(sizeof(T) * 2) Vector2
         return result;
     }
 
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector perpendicular(const Vector2& a,
+                                                OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{-a.y, a.x};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector perpendicular_ccw(const Vector2& a,
+                                                    OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.y, -a.x};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    [[nodiscard]] constexpr T length_squared() const noexcept
+    {
+        return x * x + y * y;
+    }
+
+    [[nodiscard]] constexpr precision_type length() const noexcept
+    {
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            return std::sqrt(length_squared());
+        }
+        else
+        {
+            return std::sqrt(static_cast<precision_type>(length_squared()));
+        }
+    }
+
+    [[nodiscard]] constexpr precision_type fast_length() const noexcept
+    {
+        const auto min_comp = std::min(std::abs(x), std::abs(y));
+        const auto max_comp = std::max(std::abs(x), std::abs(y));
+        return static_cast<precision_type>(max_comp + precision_type{0.3} * min_comp);
+    }
+
     // --
     T x, y;
 };
