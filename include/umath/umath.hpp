@@ -1,19 +1,16 @@
 #ifndef LIB_UMATH_HPP_p7q7hl
 #define LIB_UMATH_HPP_p7q7hl
 
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
-#include <limits>
 
 namespace umath
 {
 class arithmetic_overflow final : public std::runtime_error
 {
 public:
-    explicit arithmetic_overflow(const char* message) noexcept
-        : std::runtime_error(message)
-    {
-    }
+    explicit arithmetic_overflow(const char* message) noexcept : std::runtime_error(message) {}
 };
 
 template <typename T>
@@ -42,6 +39,6 @@ struct FloatTraits
 
 // Todo!: continue with our simd library
 
-} // namespace umath
+}  // namespace umath
 
-#endif // #end of include guard LIB_UMATH_HPP_p7q7hl
+#endif  // #end of include guard LIB_UMATH_HPP_p7q7hl
