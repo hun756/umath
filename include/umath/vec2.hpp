@@ -1030,6 +1030,80 @@ class alignas(sizeof(T) * 2) Vector2
         return angle_val < precision_type{} ? angle_val + TWO_PI : angle_val;
     }
 
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector rotate(const Vector2& v,
+                                         precision_type angle_rad,
+                                         OutputVector* out = nullptr) noexcept
+    {
+        const auto cos_a = std::cos(angle_rad);
+        const auto sin_a = std::sin(angle_rad);
+        const auto result = OutputVector{static_cast<T>(v.x * cos_a - v.y * sin_a),
+                                         static_cast<T>(v.x * sin_a + v.y * cos_a)};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector rotate_fast(const Vector2& v,
+                                              precision_type angle_rad,
+                                              OutputVector* out = nullptr) noexcept
+    {
+        if (std::abs(angle_rad - PI) < epsilon)
+        {
+            const auto result = OutputVector{-v.x, -v.y};
+            if (out)
+                *out = result;
+            return result;
+        }
+
+        if (std::abs(angle_rad - HALF_PI) < epsilon)
+        {
+            const auto result = OutputVector{-v.y, v.x};
+            if (out)
+                *out = result;
+            return result;
+        }
+
+        if (std::abs(angle_rad + HALF_PI) < epsilon)
+        {
+            const auto result = OutputVector{v.y, -v.x};
+            if (out)
+                *out = result;
+            return result;
+        }
+
+        if (std::abs(angle_rad) < 0.1)
+        {
+            const auto theta2_2 = (angle_rad * angle_rad) / 2;
+            const auto s = angle_rad;
+            const auto c = 1 - theta2_2;
+            const auto result =
+                OutputVector{static_cast<T>(v.x * c - v.y * s), static_cast<T>(v.x * s + v.y * c)};
+            if (out)
+                *out = result;
+            return result;
+        }
+
+        return rotate(v, angle_rad, out);
+    }
+
     // --
     T x, y;
 };
