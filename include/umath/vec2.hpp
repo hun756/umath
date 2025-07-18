@@ -143,6 +143,28 @@ template <typename T
 #endif
 class alignas(sizeof(T) * 2) Vector2
 {
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+    using precision_type = typename detail::numeric_traits<T>::precision_type;
+    using size_type = std::size_t;
+
+    static constexpr size_type dimensions = 2;
+    static constexpr T epsilon = detail::numeric_traits<T>::epsilon;
+
+    constexpr Vector2() noexcept : x{}, y{} {}
+
+    constexpr Vector2(const Vector2&) noexcept = default;
+    constexpr Vector2(Vector2&&) noexcept = default;
+
+    constexpr Vector2& operator=(const Vector2&) noexcept = default;
+    constexpr Vector2& operator=(Vector2&&) noexcept = default;
+
+    explicit constexpr Vector2(T value) noexcept : x{value}, y{value} {}
+    constexpr Vector2(T x_val, T y_val) noexcept : x{x_val}, y{y_val} {}
+
+    // --
+    T x, y;
 };
 
 } // namespace umath
