@@ -866,6 +866,31 @@ class alignas(sizeof(T) * 2) Vector2
         return static_cast<precision_type>(max_comp + precision_type{0.3} * min_comp);
     }
 
+    static constexpr T dot(const Vector2& a, const Vector2& b) noexcept
+    {
+        return a.x * b.x + a.y * b.y;
+    }
+
+    static constexpr T cross(const Vector2& a, const Vector2& b) noexcept
+    {
+        return a.x * b.y - a.y * b.x;
+    }
+
+    static constexpr T length_squared(const Vector2& a) noexcept
+    {
+        return a.length_squared();
+    }
+
+    static constexpr precision_type length(const Vector2& a) noexcept
+    {
+        return a.length();
+    }
+
+    static constexpr precision_type fast_length(const Vector2& a) noexcept
+    {
+        return a.fast_length();
+    }
+
     // --
     T x, y;
 };
