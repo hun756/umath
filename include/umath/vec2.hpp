@@ -944,6 +944,44 @@ class alignas(sizeof(T) * 2) Vector2
         }
     }
 
+    static constexpr T distance_squared(const Vector2& a, const Vector2& b) noexcept
+    {
+        const auto dx = a.x - b.x;
+        const auto dy = a.y - b.y;
+        return dx * dx + dy * dy;
+    }
+
+    static constexpr precision_type distance(const Vector2& a, const Vector2& b) noexcept
+    {
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            return std::sqrt(distance_squared(a, b));
+        }
+        else
+        {
+            return std::sqrt(static_cast<precision_type>(distance_squared(a, b)));
+        }
+    }
+
+    static constexpr precision_type distance_fast(const Vector2& a, const Vector2& b) noexcept
+    {
+        const auto dx = std::abs(a.x - b.x);
+        const auto dy = std::abs(a.y - b.y);
+        const auto min_d = std::min(dx, dy);
+        const auto max_d = std::max(dx, dy);
+        return static_cast<precision_type>(max_d + precision_type{0.3} * min_d);
+    }
+
+    static constexpr T manhattan_distance(const Vector2& a, const Vector2& b) noexcept
+    {
+        return std::abs(a.x - b.x) + std::abs(a.y - b.y);
+    }
+
+    static constexpr T chebyshev_distance(const Vector2& a, const Vector2& b) noexcept
+    {
+        return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y));
+    }
+
     // --
     T x, y;
 };
