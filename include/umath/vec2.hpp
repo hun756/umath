@@ -102,6 +102,49 @@ inline std::mt19937 gen{rd()};
 inline std::normal_distribution<double> normal_dist{0.0, 1.0};
 inline std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
 } // namespace detail
+
+constexpr double PI = 3.14159265358979323846;
+constexpr double HALF_PI = PI * 0.5;
+constexpr double TWO_PI = PI * 2.0;
+
+#ifdef MATH_CONCEPTS_ENABLED
+template <typename T>
+concept Arithmetic = std::is_arithmetic_v<T> && !std::is_same_v<T, bool> &&
+                     !std::is_same_v<T, char>;
+
+template <typename T>
+concept FloatingPoint = std::is_floating_point_v<T>;
+
+template <typename T, typename ValueType = void>
+concept Vector2Like =
+    requires(T t) {
+        t.x;
+        t.y;
+    } && (std::is_void_v<ValueType> ||
+          (std::is_assignable_v<decltype(std::declval<T>().x)&, ValueType> &&
+           std::is_assignable_v<decltype(std::declval<T>().y)&, ValueType>));
+#endif
+
+enum class ComparisonMode
+{
+    LEXICOGRAPHIC,
+    MAGNITUDE,
+    ANGLE,
+    MANHATTAN
+};
+
+template <typename T
+#ifdef MATH_CONCEPTS_ENABLED
+          >
+    requires Arithmetic<T>
+#else
+          ,
+          typename = std::enable_if_t<detail::numeric_traits<T>::is_valid>>
+#endif
+class alignas(sizeof(T) * 2) Vector2
+{
+};
+
 } // namespace umath
 
 #endif // End of include guard: LIB_UMATH_VEC2_HPP_a5enmn
