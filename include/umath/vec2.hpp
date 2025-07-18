@@ -367,6 +367,124 @@ class alignas(sizeof(T) * 2) Vector2
     inline static const Vector2 INFINITY_VEC{std::numeric_limits<T>::infinity(),
                                              std::numeric_limits<T>::infinity()};
 
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto zero_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return ZERO_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> zero_typed{U{}, U{}};
+            return zero_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto one_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return ONE_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> one_typed{U{1}, U{1}};
+            return one_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto neg_one_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return NEG_ONE_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> neg_one_typed{U{-1}, U{-1}};
+            return neg_one_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto unit_x_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return UNIT_X_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> unit_x_typed{U{1}, U{}};
+            return unit_x_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto unit_y_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return UNIT_Y_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> unit_y_typed{U{}, U{1}};
+            return unit_y_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto up_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        return unit_y_immutable<U>();
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto down_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return DOWN_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> down_typed{U{}, U{-1}};
+            return down_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto left_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return LEFT_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> left_typed{U{-1}, U{}};
+            return left_typed;
+        }
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr auto right_immutable() noexcept -> const ImmutableVector2<U>&
+    {
+        if constexpr (std::is_same_v<U, T>)
+        {
+            return RIGHT_IMMUTABLE;
+        }
+        else
+        {
+            static const ImmutableVector2<U> right_typed{U{1}, U{}};
+            return right_typed;
+        }
+    }
     // --
     T x, y;
 };
