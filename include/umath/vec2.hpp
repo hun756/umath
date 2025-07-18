@@ -174,6 +174,20 @@ class alignas(sizeof(T) * 2) Vector2
     {
     }
 
+    template <typename ValueType = T
+#ifdef MATH_CONCEPTS_ENABLED
+        > requires Arithmetic<ValueType> && std::convertible_to<ValueType, T>
+#else
+        , typename = std::enable_if_t<detail::numeric_traits<ValueType>::is_valid &&
+                                      std::is_convertible_v<ValueType, T>>
+        >
+#endif
+    class ImmutableVector2
+    {
+    private:
+        const ValueType x_, y_;
+    };
+
     // --
     T x, y;
 };
