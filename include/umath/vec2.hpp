@@ -313,6 +313,60 @@ class alignas(sizeof(T) * 2) Vector2
         }
     };
 
+    template <typename X, typename Y>
+    ImmutableVector2(X, Y) -> ImmutableVector2<std::common_type_t<X, Y>>;
+
+    template <typename U>
+    ImmutableVector2(const Vector2<U>&) -> ImmutableVector2<U>;
+
+    // Factory functions with perfect type deduction
+    template <typename X, typename Y>
+    [[nodiscard]] static constexpr auto make_immutable(X&& x_val, Y&& y_val) noexcept
+        -> ImmutableVector2<std::common_type_t<std::decay_t<X>, std::decay_t<Y>>>
+    {
+        return {std::forward<X>(x_val), std::forward<Y>(y_val)};
+    }
+
+    template <typename U>
+    [[nodiscard]] static constexpr auto make_immutable(const Vector2<U>& vec) noexcept
+        -> ImmutableVector2<U>
+    {
+        return ImmutableVector2<U>{vec};
+    }
+
+    // Immutable constant instances with perfect type matching
+    inline static const ImmutableVector2<T> ZERO_IMMUTABLE{T{}, T{}};
+    inline static const ImmutableVector2<T> ONE_IMMUTABLE{T{1}, T{1}};
+    inline static const ImmutableVector2<T> NEG_ONE_IMMUTABLE{T{-1}, T{-1}};
+    inline static const ImmutableVector2<T> UNIT_X_IMMUTABLE{T{1}, T{}};
+    inline static const ImmutableVector2<T> UNIT_Y_IMMUTABLE{T{}, T{1}};
+    inline static const ImmutableVector2<T> UP_IMMUTABLE{T{}, T{1}};
+    inline static const ImmutableVector2<T> DOWN_IMMUTABLE{T{}, T{-1}};
+    inline static const ImmutableVector2<T> LEFT_IMMUTABLE{T{-1}, T{}};
+    inline static const ImmutableVector2<T> RIGHT_IMMUTABLE{T{1}, T{}};
+
+#ifdef MATH_CONCEPTS_ENABLED
+    template <typename U = T>
+    requires FloatingPoint<U>
+    inline static const ImmutableVector2<U> INFINITY_IMMUTABLE{std::numeric_limits<U>::infinity(),
+                                                               std::numeric_limits<U>::infinity()};
+#else
+    template <typename U = T, std::enable_if_t<std::is_floating_point_v<U>, int> = 0>
+    inline static const ImmutableVector2<U> INFINITY_IMMUTABLE{std::numeric_limits<U>::infinity(),
+                                                               std::numeric_limits<U>::infinity()};
+#endif
+    inline static const Vector2 ZERO{T{}, T{}};
+    inline static const Vector2 ONE{T{1}, T{1}};
+    inline static const Vector2 NEG_ONE{T{-1}, T{-1}};
+    inline static const Vector2 UNIT_X{T{1}, T{}};
+    inline static const Vector2 UNIT_Y{T{}, T{1}};
+    inline static const Vector2 UP{T{}, T{1}};
+    inline static const Vector2 DOWN{T{}, T{-1}};
+    inline static const Vector2 LEFT{T{-1}, T{}};
+    inline static const Vector2 RIGHT{T{1}, T{}};
+    inline static const Vector2 INFINITY_VEC{std::numeric_limits<T>::infinity(),
+                                             std::numeric_limits<T>::infinity()};
+
     // --
     T x, y;
 };
