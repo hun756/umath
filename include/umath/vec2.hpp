@@ -319,7 +319,6 @@ class alignas(sizeof(T) * 2) Vector2
     template <typename U>
     ImmutableVector2(const Vector2<U>&) -> ImmutableVector2<U>;
 
-    // Factory functions with perfect type deduction
     template <typename X, typename Y>
     [[nodiscard]] static constexpr auto make_immutable(X&& x_val, Y&& y_val) noexcept
         -> ImmutableVector2<std::common_type_t<std::decay_t<X>, std::decay_t<Y>>>
@@ -334,7 +333,6 @@ class alignas(sizeof(T) * 2) Vector2
         return ImmutableVector2<U>{vec};
     }
 
-    // Immutable constant instances with perfect type matching
     inline static const ImmutableVector2<T> ZERO_IMMUTABLE{T{}, T{}};
     inline static const ImmutableVector2<T> ONE_IMMUTABLE{T{1}, T{1}};
     inline static const ImmutableVector2<T> NEG_ONE_IMMUTABLE{T{-1}, T{-1}};
@@ -745,6 +743,64 @@ class alignas(sizeof(T) * 2) Vector2
             throw std::runtime_error("Division by zero or near-zero value");
         }
         const auto result = OutputVector{a.x / scalar, a.y / scalar};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector negate(const Vector2& a, OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{-a.x, -a.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector inverse(const Vector2& a, OutputVector* out = nullptr)
+    {
+        if (std::abs(a.x) < epsilon || std::abs(a.y) < epsilon)
+        {
+            throw std::runtime_error("Inversion of zero or near-zero value");
+        }
+        const auto result = OutputVector{T{1} / a.x, T{1} / a.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector inverse_safe(const Vector2& a,
+                                               T default_value = T{},
+                                               OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{std::abs(a.x) < epsilon ? default_value : T{1} / a.x,
+                                         std::abs(a.y) < epsilon ? default_value : T{1} / a.y};
         if (out)
             *out = result;
         return result;
