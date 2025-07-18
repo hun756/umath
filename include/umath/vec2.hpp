@@ -579,7 +579,7 @@ class alignas(sizeof(T) * 2) Vector2
     {
         x = value;
     }
-    
+
     constexpr void set_y(T value) noexcept
     {
         y = value;
@@ -588,6 +588,166 @@ class alignas(sizeof(T) * 2) Vector2
     constexpr Vector2 clone() const noexcept
     {
         return *this;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector add(const Vector2& a,
+                                      const Vector2& b,
+                                      OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x + b.x, a.y + b.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector add_scalar(const Vector2& a,
+                                             T scalar,
+                                             OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x + scalar, a.y + scalar};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector subtract(const Vector2& a,
+                                           const Vector2& b,
+                                           OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x - b.x, a.y - b.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector subtract_scalar(const Vector2& a,
+                                                  T scalar,
+                                                  OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x - scalar, a.y - scalar};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector multiply(const Vector2& a,
+                                           const Vector2& b,
+                                           OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x * b.x, a.y * b.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename Dummy = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector multiply_scalar(const Vector2& a,
+                                                  T scalar,
+                                                  OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x * scalar, a.y * scalar};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector divide(const Vector2& a,
+                                         const Vector2& b,
+                                         OutputVector* out = nullptr)
+    {
+        if (std::abs(b.x) < epsilon || std::abs(b.y) < epsilon)
+        {
+            throw std::runtime_error("Division by zero or near-zero value");
+        }
+        const auto result = OutputVector{a.x / b.x, a.y / b.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename Dummy = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector divide_scalar(const Vector2& a,
+                                                T scalar,
+                                                OutputVector* out = nullptr)
+    {
+        if (std::abs(scalar) < epsilon)
+        {
+            throw std::runtime_error("Division by zero or near-zero value");
+        }
+        const auto result = OutputVector{a.x / scalar, a.y / scalar};
+        if (out)
+            *out = result;
+        return result;
     }
 
     // --
