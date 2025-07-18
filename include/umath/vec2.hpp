@@ -488,9 +488,10 @@ class alignas(sizeof(T) * 2) Vector2
 
     template <typename U = T
 #ifndef MATH_CONCEPTS_ENABLED
-        , typename = std::enable_if_t<std::is_floating_point_v<U>>
+              ,
+              typename = std::enable_if_t<std::is_floating_point_v<U>>
 #endif
-    >
+              >
 #ifdef MATH_CONCEPTS_ENABLED
     requires FloatingPoint<U>
 #endif
@@ -499,6 +500,56 @@ class alignas(sizeof(T) * 2) Vector2
         static const ImmutableVector2<U> infinity_typed{std::numeric_limits<U>::infinity(),
                                                         std::numeric_limits<U>::infinity()};
         return infinity_typed;
+    }
+
+    static constexpr const Vector2& zero() noexcept
+    {
+        return ZERO;
+    }
+
+    static constexpr const Vector2& one() noexcept
+    {
+        return ONE;
+    }
+
+    static constexpr const Vector2& neg_one() noexcept
+    {
+        return NEG_ONE;
+    }
+
+    static constexpr const Vector2& unit_x() noexcept
+    {
+        return UNIT_X;
+    }
+
+    static constexpr const Vector2& unit_y() noexcept
+    {
+        return UNIT_Y;
+    }
+
+    static constexpr const Vector2& up() noexcept
+    {
+        return UP;
+    }
+
+    static constexpr const Vector2& down() noexcept
+    {
+        return DOWN;
+    }
+
+    static constexpr const Vector2& left() noexcept
+    {
+        return LEFT;
+    }
+
+    static constexpr const Vector2& right() noexcept
+    {
+        return RIGHT;
+    }
+    
+    static constexpr const Vector2& infinity_vec() noexcept
+    {
+        return INFINITY_VEC;
     }
 
     // --
