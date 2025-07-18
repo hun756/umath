@@ -688,7 +688,7 @@ class alignas(sizeof(T) * 2) Vector2
     template <typename OutputVector = Vector2
 #ifndef MATH_CONCEPTS_ENABLED
               ,
-              typename Dummy = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
 #ifdef MATH_CONCEPTS_ENABLED
@@ -730,7 +730,7 @@ class alignas(sizeof(T) * 2) Vector2
     template <typename OutputVector = Vector2
 #ifndef MATH_CONCEPTS_ENABLED
               ,
-              typename Dummy = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
 #ifdef MATH_CONCEPTS_ENABLED
