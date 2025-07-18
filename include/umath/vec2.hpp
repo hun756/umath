@@ -982,6 +982,54 @@ class alignas(sizeof(T) * 2) Vector2
         return std::max(std::abs(a.x - b.x), std::abs(a.y - b.y));
     }
 
+    static constexpr precision_type angle_between(const Vector2& a, const Vector2& b)
+    {
+        const auto dot_prod = dot(a, b);
+        const auto len_a = a.length();
+        const auto len_b = b.length();
+
+        if (len_a < epsilon || len_b < epsilon)
+        {
+            throw std::runtime_error("Cannot calculate angle with zero-length vector");
+        }
+
+        const auto cos_theta = dot_prod / (static_cast<T>(len_a) * static_cast<T>(len_b));
+        return std::acos(std::clamp(static_cast<precision_type>(cos_theta),
+                                    precision_type{-1},
+                                    precision_type{1}));
+    }
+
+    static constexpr precision_type fast_angle(const Vector2& a, const Vector2& b) noexcept
+    {
+        const auto dx = b.x - a.x;
+        const auto dy = b.y - a.y;
+
+        if (dx == T{})
+            return dy > T{} ? HALF_PI : -HALF_PI;
+
+        const auto abs_y = std::abs(dy);
+        const auto abs_x = std::abs(dx);
+        const auto a_val = abs_x > abs_y ? abs_y / abs_x : abs_x / abs_y;
+        const auto s = a_val * a_val;
+        auto r = ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a_val + a_val;
+
+        if (abs_y > abs_x)
+            r = HALF_PI - r;
+        if (dx < T{})
+            r = PI - r;
+        if (dy < T{})
+            r = -r;
+
+        return r;
+    }
+
+    constexpr precision_type angle() const noexcept
+    {
+        const auto angle_val =
+            std::atan2(static_cast<precision_type>(y), static_cast<precision_type>(x));
+        return angle_val < precision_type{} ? angle_val + TWO_PI : angle_val;
+    }
+
     // --
     T x, y;
 };
