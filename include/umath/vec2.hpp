@@ -891,6 +891,59 @@ class alignas(sizeof(T) * 2) Vector2
         return a.fast_length();
     }
 
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector normalize(const Vector2& a, OutputVector* out = nullptr)
+    {
+        const auto len = a.length();
+        if (len < epsilon)
+        {
+            throw std::runtime_error("Cannot normalize zero-length vector");
+        }
+        const auto inv_len = T{1} / static_cast<T>(len);
+        const auto result = OutputVector{a.x * inv_len, a.y * inv_len};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector normalize_fast(const Vector2& a, OutputVector* out = nullptr)
+    {
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            const auto len_sq = a.length_squared();
+            if (len_sq < epsilon * epsilon)
+            {
+                throw std::runtime_error("Cannot normalize zero-length vector");
+            }
+            const auto inv_len = detail::fast_inverse_sqrt(len_sq);
+            const auto result = OutputVector{a.x * inv_len, a.y * inv_len};
+            if (out)
+                *out = result;
+            return result;
+        }
+        else
+        {
+            return normalize(a, out);
+        }
+    }
+
     // --
     T x, y;
 };
