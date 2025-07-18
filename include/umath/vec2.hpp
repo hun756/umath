@@ -176,16 +176,141 @@ class alignas(sizeof(T) * 2) Vector2
 
     template <typename ValueType = T
 #ifdef MATH_CONCEPTS_ENABLED
-        > requires Arithmetic<ValueType> && std::convertible_to<ValueType, T>
+              >
+    requires Arithmetic<ValueType> && std::convertible_to<ValueType, T>
 #else
-        , typename = std::enable_if_t<detail::numeric_traits<ValueType>::is_valid &&
-                                      std::is_convertible_v<ValueType, T>>
-        >
+              ,
+              typename = std::enable_if_t<detail::numeric_traits<ValueType>::is_valid
+                                          && std::is_convertible_v<ValueType, T>>>
 #endif
     class ImmutableVector2
     {
     private:
         const ValueType x_, y_;
+
+    public:
+        using value_type = ValueType;
+        using const_reference = const ValueType&;
+
+        template <typename X,
+                  typename Y
+#ifndef MATH_CONCEPTS_ENABLED
+                  ,
+                  typename = std::enable_if_t<
+                      detail::numeric_traits<X>::is_valid && detail::numeric_traits<Y>::is_valid
+                      && std::is_convertible_v<X, ValueType> && std::is_convertible_v<Y, ValueType>>
+#endif
+                  >
+#ifdef MATH_CONCEPTS_ENABLED
+        requires Arithmetic<X> && Arithmetic<Y> && std::convertible_to<X, ValueType>
+                     && std::convertible_to<Y, ValueType>
+#endif
+        constexpr ImmutableVector2(X&& x_val, Y&& y_val) noexcept
+            : x_{static_cast<ValueType>(std::forward<X>(x_val))},
+              y_{static_cast<ValueType>(std::forward<Y>(y_val))}
+        {
+        }
+
+        template <typename U
+#ifdef MATH_CONCEPTS_ENABLED
+                  >
+        requires Arithmetic<U>
+                     && std::convertible_to<U, ValueType>
+#else
+                  ,
+                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                                              && std::is_convertible_v<U, ValueType>>
+#endif
+                            >
+                 constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
+            : x_{static_cast<ValueType>(other.x)},
+        y_{static_cast<ValueType>(other.y)}
+        {
+        }
+
+        template <typename U
+#ifndef MATH_CONCEPTS_ENABLED
+                  ,
+                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                                              && std::is_convertible_v<U, ValueType>>
+#endif
+                  >
+#ifdef MATH_CONCEPTS_ENABLED
+        requires Arithmetic<U> && std::convertible_to<U, ValueType>
+#endif
+        constexpr explicit ImmutableVector2(const ImmutableVector2<U>& other) noexcept
+            : x_{static_cast<ValueType>(other.x())}, y_{static_cast<ValueType>(other.y())}
+        {
+        }
+
+        [[nodiscard]] constexpr const_reference x() const noexcept
+        {
+            return x_;
+        }
+        [[nodiscard]] constexpr const_reference y() const noexcept
+        {
+            return y_;
+        }
+
+        template <typename U = T
+#ifndef MATH_CONCEPTS_ENABLED
+                  ,
+                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                                              && std::is_convertible_v<ValueType, U>>
+#endif
+                  >
+#ifdef MATH_CONCEPTS_ENABLED
+        requires Arithmetic<U> && std::convertible_to<ValueType, U>
+#endif
+        [[nodiscard]] constexpr operator Vector2<U>() const noexcept
+        {
+            return {static_cast<U>(x_), static_cast<U>(y_)};
+        }
+
+        template <typename U
+#ifndef MATH_CONCEPTS_ENABLED
+                  ,
+                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid>
+#endif
+                  >
+#ifdef MATH_CONCEPTS_ENABLED
+        requires Arithmetic<U>
+#endif
+        [[nodiscard]] constexpr auto as() const noexcept -> ImmutableVector2<U>
+        {
+            return ImmutableVector2<U>{static_cast<U>(x_), static_cast<U>(y_)};
+        }
+
+        [[nodiscard]] constexpr auto data() const noexcept -> const ValueType*
+        {
+            return &x_;
+        }
+        [[nodiscard]] constexpr auto hash() const noexcept -> std::size_t
+        {
+            constexpr std::size_t golden_ratio = 0x9e'37'79'b9;
+            const auto h1 = std::hash<ValueType>{}(x_);
+            const auto h2 = std::hash<ValueType>{}(y_);
+            return h1 ^ (h2 + golden_ratio + (h1 << 6) + (h1 >> 2));
+        }
+
+        template <typename U>
+        [[nodiscard]] constexpr bool operator==(const ImmutableVector2<U>& other) const noexcept
+        {
+            return detail::approximately_equal(static_cast<T>(x_), static_cast<T>(other.x()))
+                   && detail::approximately_equal(static_cast<T>(y_), static_cast<T>(other.y()));
+        }
+
+        template <typename U>
+        [[nodiscard]] constexpr bool operator==(const Vector2<U>& other) const noexcept
+        {
+            return detail::approximately_equal(static_cast<T>(x_), static_cast<T>(other.x))
+                   && detail::approximately_equal(static_cast<T>(y_), static_cast<T>(other.y));
+        }
+
+        [[nodiscard]] constexpr auto operator[](std::size_t index) const noexcept -> const_reference
+        {
+            return index == 0 ? x_ : y_;
+        }
     };
 
     // --
