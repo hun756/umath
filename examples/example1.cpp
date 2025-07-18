@@ -1,7 +1,7 @@
 // write dummy c++ program
 #include <umath/umath.hpp>
 
-#include <iostream>
+#include <cstdio>
 
 int main()
 {
