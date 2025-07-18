@@ -1,13 +1,9 @@
-#include "myproject/ModuleA.h"
+// write dummy c++ program
 #include <iostream>
+#include <umath/umath.hpp>
 
 int main()
 {
-    myproject::StringProcessor sp;
-    std::string text = "Hello Example 1";
-
-    std::cout << "Original: " << text << std::endl;
-    std::cout << "Reversed: " << sp.reverse(text) << std::endl;
-
+    (void)fprintf(stdout, "%s\n", "Hello from the umath library!");
     return 0;
 }
