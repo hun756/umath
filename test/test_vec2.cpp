@@ -338,3 +338,39 @@ TEST_F(Vector2Test, IsZero)
     EXPECT_TRUE(zero_vec.is_zero());
     EXPECT_FALSE(v1.is_zero());
 }
+
+TEST_F(Vector2Test, DistanceSquared)
+{
+    float dist_sq = Vector2f::distance_squared(v1, v2);
+    EXPECT_FLOAT_EQ(dist_sq, 8.0f);  // (3-1)² + (4-2)² = 4 + 4 = 8
+}
+
+TEST_F(Vector2Test, Distance)
+{
+    float dist = Vector2f::distance(v1, v2);
+    EXPECT_FLOAT_EQ(dist, std::sqrt(8.0f));
+}
+
+TEST_F(Vector2Test, DistanceMemberFunction)
+{
+    float dist = v1.distance(v2);
+    EXPECT_FLOAT_EQ(dist, std::sqrt(8.0f));
+}
+
+TEST_F(Vector2Test, FastDistance)
+{
+    float fast_dist = Vector2f::distance_fast(v1, v2);
+    EXPECT_NEAR(fast_dist, std::sqrt(8.0f), 0.5f);
+}
+
+TEST_F(Vector2Test, ManhattanDistance)
+{
+    float manhattan = Vector2f::manhattan_distance(v1, v2);
+    EXPECT_FLOAT_EQ(manhattan, 4.0f);
+}
+
+TEST_F(Vector2Test, ChebyshevDistance)
+{
+    float chebyshev = Vector2f::chebyshev_distance(v1, v2);
+    EXPECT_FLOAT_EQ(chebyshev, 2.0f);
+}
