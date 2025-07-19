@@ -1,9 +1,15 @@
 #ifndef LIB_UMATH_VEC2_HPP_a5enmn
 #define LIB_UMATH_VEC2_HPP_a5enmn
 
+#include <array>
 #include <cmath>
+#include <cstddef>
+#include <functional>
+#include <limits>
 #include <random>
+#include <stdexcept>
 #include <type_traits>
+#include <utility>
 
 namespace umath
 {
@@ -1855,5 +1861,60 @@ using Vec2i = Vector2i;
 using Vec2u = Vector2u;
 
 }  // namespace umath
+
+namespace std
+{
+template <typename T>
+struct hash<umath::Vector2<T>>
+{
+    constexpr std::size_t operator()(const umath::Vector2<T>& vec) const noexcept
+    {
+        return vec.hash();
+    }
+};
+
+template <typename T>
+struct tuple_size<umath::Vector2<T>> : std::integral_constant<std::size_t, 2>
+{
+};
+
+template <std::size_t I, typename T>
+struct tuple_element<I, umath::Vector2<T>>
+{
+    static_assert(I < 2, "Index out of bounds for Vector2");
+    using type = T;
+};
+
+template <std::size_t I, typename T>
+constexpr T& get(umath::Vector2<T>& vec) noexcept
+{
+    static_assert(I < 2, "Index out of bounds for Vector2");
+    if constexpr (I == 0)
+        return vec.x;
+    else
+        return vec.y;
+}
+
+template <std::size_t I, typename T>
+constexpr const T& get(const umath::Vector2<T>& vec) noexcept
+{
+    static_assert(I < 2, "Index out of bounds for Vector2");
+    if constexpr (I == 0)
+        return vec.x;
+    else
+        return vec.y;
+}
+
+template <std::size_t I, typename T>
+constexpr T&& get(umath::Vector2<T>&& vec) noexcept
+{
+    static_assert(I < 2, "Index out of bounds for Vector2");
+    if constexpr (I == 0)
+        return std::move(vec.x);
+    else
+        return std::move(vec.y);
+}
+}  // namespace std
+
 
 #endif  // End of include guard: LIB_UMATH_VEC2_HPP_a5enmn
