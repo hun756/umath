@@ -1,8 +1,6 @@
 #ifndef LIB_UMATH_VEC2_HPP_a5enmn
 #define LIB_UMATH_VEC2_HPP_a5enmn
 
-#include <umath/umath.hpp>
-
 #include <cmath>
 #include <random>
 #include <type_traits>
@@ -1202,6 +1200,37 @@ class alignas(sizeof(T) * 2) Vector2
 
         const auto result = OutputVector{static_cast<T>(result_length * std::cos(result_angle)),
                                          static_cast<T>(result_length * std::sin(result_angle))};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2>
+    static constexpr OutputVector smooth_step(const Vector2& a,
+                                              const Vector2& b,
+                                              T t,
+                                              OutputVector* out = nullptr) noexcept
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+        const auto smooth_t = clamped_t * clamped_t * (T{3} - T{2} * clamped_t);
+        const auto result =
+            OutputVector{a.x + (b.x - a.x) * smooth_t, a.y + (b.y - a.y) * smooth_t};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2>
+    static constexpr OutputVector smoother_step(const Vector2& a,
+                                                const Vector2& b,
+                                                T t,
+                                                OutputVector* out = nullptr) noexcept
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+        const auto t3 = clamped_t * clamped_t * clamped_t;
+        const auto smooth_t = t3 * (T{10} - T{15} * clamped_t + T{6} * clamped_t * clamped_t);
+        const auto result =
+            OutputVector{a.x + (b.x - a.x) * smooth_t, a.y + (b.y - a.y) * smooth_t};
         if (out)
             *out = result;
         return result;
