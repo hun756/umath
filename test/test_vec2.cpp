@@ -170,3 +170,41 @@ TEST_F(Vector2Test, UnaryPlus)
     EXPECT_FLOAT_EQ(result.x, 3.0f);
     EXPECT_FLOAT_EQ(result.y, 4.0f);
 }
+
+TEST_F(Vector2Test, AdditionAssignment)
+{
+    Vector2f vec = v1;
+    vec += v2;
+    EXPECT_FLOAT_EQ(vec.x, 4.0f);
+    EXPECT_FLOAT_EQ(vec.y, 6.0f);
+}
+
+TEST_F(Vector2Test, SubtractionAssignment)
+{
+    Vector2f vec = v1;
+    vec -= v2;
+    EXPECT_FLOAT_EQ(vec.x, 2.0f);
+    EXPECT_FLOAT_EQ(vec.y, 2.0f);
+}
+
+TEST_F(Vector2Test, MultiplicationAssignment)
+{
+    Vector2f vec = v1;
+    vec *= 2.0f;
+    EXPECT_FLOAT_EQ(vec.x, 6.0f);
+    EXPECT_FLOAT_EQ(vec.y, 8.0f);
+}
+
+TEST_F(Vector2Test, DivisionAssignment)
+{
+    Vector2f vec = v1;
+    vec /= 2.0f;
+    EXPECT_FLOAT_EQ(vec.x, 1.5f);
+    EXPECT_FLOAT_EQ(vec.y, 2.0f);
+}
+
+TEST_F(Vector2Test, DivisionAssignmentByZero)
+{
+    Vector2f vec = v1;
+    EXPECT_THROW(vec /= 0.0f, std::runtime_error);
+}
