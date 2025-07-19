@@ -1668,9 +1668,191 @@ class alignas(sizeof(T) * 2) Vector2
         return *this;
     }
 
-    // --
+    [[nodiscard]] constexpr Vector2 operator+() const noexcept
+    {
+        return *this;
+    }
+
+    [[nodiscard]] constexpr Vector2 operator-() const noexcept
+    {
+        return {-x, -y};
+    }
+
+    [[nodiscard]] constexpr T& operator[](size_type index) noexcept
+    {
+        return index == 0 ? x : y;
+    }
+
+    [[nodiscard]] constexpr const T& operator[](size_type index) const noexcept
+    {
+        return index == 0 ? x : y;
+    }
+
+    [[nodiscard]] constexpr T* data() noexcept
+    {
+        return &x;
+    }
+
+    [[nodiscard]] constexpr const T* data() const noexcept
+    {
+        return &x;
+    }
+
+    [[nodiscard]] constexpr std::array<T, 2> to_array() const noexcept
+    {
+        return {x, y};
+    }
+
+    constexpr void swap(Vector2& other) noexcept
+    {
+        std::swap(x, other.x);
+        std::swap(y, other.y);
+    }
+
+    [[nodiscard]] constexpr std::size_t hash() const noexcept
+    {
+        constexpr std::size_t golden_ratio = 0x9e'37'79'b9;
+        const auto h1 = std::hash<T>{}(x);
+        const auto h2 = std::hash<T>{}(y);
+        return h1 ^ (h2 + golden_ratio + (h1 << 6) + (h1 >> 2));
+    }
+
     T x, y;
 };
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator+(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return {lhs.x + rhs.x, lhs.y + rhs.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator+(const Vector2<T>& vec, T scalar) noexcept
+{
+    return {vec.x + scalar, vec.y + scalar};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator+(T scalar, const Vector2<T>& vec) noexcept
+{
+    return {scalar + vec.x, scalar + vec.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator-(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return {lhs.x - rhs.x, lhs.y - rhs.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator-(const Vector2<T>& vec, T scalar) noexcept
+{
+    return {vec.x - scalar, vec.y - scalar};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator-(T scalar, const Vector2<T>& vec) noexcept
+{
+    return {scalar - vec.x, scalar - vec.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator*(const Vector2<T>& vec, T scalar) noexcept
+{
+    return {vec.x * scalar, vec.y * scalar};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator*(T scalar, const Vector2<T>& vec) noexcept
+{
+    return {scalar * vec.x, scalar * vec.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator*(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return {lhs.x * rhs.x, lhs.y * rhs.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator/(const Vector2<T>& vec, T scalar)
+{
+    if (std::abs(scalar) < Vector2<T>::epsilon)
+    {
+        throw std::runtime_error("Division by zero or near-zero value");
+    }
+    return {vec.x / scalar, vec.y / scalar};
+}
+
+template <typename T>
+[[nodiscard]] constexpr Vector2<T> operator/(const Vector2<T>& lhs, const Vector2<T>& rhs)
+{
+    if (std::abs(rhs.x) < Vector2<T>::epsilon || std::abs(rhs.y) < Vector2<T>::epsilon)
+    {
+        throw std::runtime_error("Division by zero or near-zero value");
+    }
+    return {lhs.x / rhs.x, lhs.y / rhs.y};
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool operator==(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return lhs.approximately_equals(rhs);
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool operator!=(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return !(lhs == rhs);
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool operator<(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return Vector2<T>::compare(lhs, rhs) < 0;
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool operator<=(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return Vector2<T>::compare(lhs, rhs) <= 0;
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool operator>(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return Vector2<T>::compare(lhs, rhs) > 0;
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool operator>=(const Vector2<T>& lhs, const Vector2<T>& rhs) noexcept
+{
+    return Vector2<T>::compare(lhs, rhs) >= 0;
+}
+
+template <typename T>
+constexpr void swap(Vector2<T>& lhs, Vector2<T>& rhs) noexcept
+{
+    lhs.swap(rhs);
+}
+
+using Vector2f = Vector2<float>;
+using Vector2d = Vector2<double>;
+using Vector2i = Vector2<int>;
+using Vector2u = Vector2<unsigned int>;
+using Vector2i8 = Vector2<int8_t>;
+using Vector2u8 = Vector2<uint8_t>;
+using Vector2i16 = Vector2<int16_t>;
+using Vector2u16 = Vector2<uint16_t>;
+using Vector2i32 = Vector2<int32_t>;
+using Vector2u32 = Vector2<uint32_t>;
+using Vector2i64 = Vector2<int64_t>;
+using Vector2u64 = Vector2<uint64_t>;
+
+using Vec2f = Vector2f;
+using Vec2d = Vector2d;
+using Vec2i = Vector2i;
+using Vec2u = Vector2u;
 
 }  // namespace umath
 
