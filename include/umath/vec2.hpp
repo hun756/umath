@@ -141,6 +141,7 @@ requires Arithmetic<T>
 #endif
 class alignas(sizeof(T) * 2) Vector2
 {
+public:
     using value_type = T;
     using reference = T&;
     using const_reference = const T&;
