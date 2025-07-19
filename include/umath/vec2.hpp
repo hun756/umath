@@ -1355,6 +1355,48 @@ class alignas(sizeof(T) * 2) Vector2
         return result;
     }
 
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static OutputVector random_fast(precision_type scale = precision_type{1},
+                                    OutputVector* out = nullptr)
+    {
+        const auto angle = detail::uniform_dist(detail::gen) * TWO_PI;
+        const auto result = OutputVector{static_cast<T>(std::cos(angle) * scale),
+                                         static_cast<T>(std::sin(angle) * scale)};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifdef MATH_CONCEPTS_ENABLED
+              >
+    requires Vector2Like<OutputVector, T>
+#else
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+             >
+    static OutputVector random_box(T min_x, T max_x, T min_y, T max_y, OutputVector* out = nullptr)
+    {
+        std::uniform_real_distribution<precision_type> dist_x{static_cast<precision_type>(min_x),
+                                                              static_cast<precision_type>(max_x)};
+        std::uniform_real_distribution<precision_type> dist_y{static_cast<precision_type>(min_y),
+                                                              static_cast<precision_type>(max_y)};
+        const auto result =
+            OutputVector{static_cast<T>(dist_x(detail::gen)), static_cast<T>(dist_y(detail::gen))};
+        if (out)
+            *out = result;
+        return result;
+    }
+
     // --
     T x, y;
 };
