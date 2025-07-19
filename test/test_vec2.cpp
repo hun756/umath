@@ -443,3 +443,57 @@ TEST_F(Vector2Test, PerpendicularCCW)
     EXPECT_FLOAT_EQ(perp.x, 0.0f);
     EXPECT_FLOAT_EQ(perp.y, -1.0f);
 }
+
+TEST_F(Vector2Test, LinearInterpolation)
+{
+    Vector2f start(0.0f, 0.0f);
+    Vector2f end(10.0f, 10.0f);
+    auto result = Vector2f::lerp(start, end, 0.5f);
+    EXPECT_FLOAT_EQ(result.x, 5.0f);
+    EXPECT_FLOAT_EQ(result.y, 5.0f);
+}
+
+TEST_F(Vector2Test, LinearInterpolationClamping)
+{
+    Vector2f start(0.0f, 0.0f);
+    Vector2f end(10.0f, 10.0f);
+    auto result = Vector2f::lerp(start, end, 1.5f);
+    EXPECT_FLOAT_EQ(result.x, 10.0f);
+    EXPECT_FLOAT_EQ(result.y, 10.0f);
+}
+
+TEST_F(Vector2Test, LinearInterpolationUnclamped)
+{
+    Vector2f start(0.0f, 0.0f);
+    Vector2f end(10.0f, 10.0f);
+    auto result = Vector2f::lerp_unclamped(start, end, 1.5f);
+    EXPECT_FLOAT_EQ(result.x, 15.0f);
+    EXPECT_FLOAT_EQ(result.y, 15.0f);
+}
+
+TEST_F(Vector2Test, SphericalLinearInterpolation)
+{
+    Vector2f start(1.0f, 0.0f);
+    Vector2f end(0.0f, 1.0f);
+    auto result = Vector2f::slerp(start, end, 0.5f);
+    float expected_length = (start.length() + end.length()) * 0.5f;
+    EXPECT_NEAR(result.length(), expected_length, epsilon);
+}
+
+TEST_F(Vector2Test, SmoothStep)
+{
+    Vector2f start(0.0f, 0.0f);
+    Vector2f end(10.0f, 10.0f);
+    auto result = Vector2f::smooth_step(start, end, 0.5f);
+    EXPECT_FLOAT_EQ(result.x, 5.0f);
+    EXPECT_FLOAT_EQ(result.y, 5.0f);
+}
+
+TEST_F(Vector2Test, SmootherStep)
+{
+    Vector2f start(0.0f, 0.0f);
+    Vector2f end(10.0f, 10.0f);
+    auto result = Vector2f::smoother_step(start, end, 0.5f);
+    EXPECT_FLOAT_EQ(result.x, 5.0f);
+    EXPECT_FLOAT_EQ(result.y, 5.0f);
+}
