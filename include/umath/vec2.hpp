@@ -1397,6 +1397,63 @@ class alignas(sizeof(T) * 2) Vector2
         return result;
     }
 
+    [[nodiscard]] constexpr bool is_normalized(T tolerance = epsilon) const noexcept
+    {
+        return detail::approximately_equal(length_squared(), T{1}, tolerance);
+    }
+
+    [[nodiscard]] constexpr bool is_zero(T tolerance = epsilon) const noexcept
+    {
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            return length_squared() <= tolerance * tolerance;
+        }
+        else
+        {
+            return x == T{} && y == T{};
+        }
+    }
+
+    [[nodiscard]] constexpr bool approximately_equals(const Vector2& other,
+                                                      T tolerance = epsilon) const noexcept
+    {
+        return detail::approximately_equal(x, other.x, tolerance)
+               && detail::approximately_equal(y, other.y, tolerance);
+    }
+
+    constexpr Vector2& normalize()
+    {
+        const auto len = length();
+        if (len < epsilon)
+        {
+            throw std::runtime_error("Cannot normalize zero-length vector");
+        }
+        const auto inv_len = T{1} / static_cast<T>(len);
+        x *= inv_len;
+        y *= inv_len;
+        return *this;
+    }
+
+    constexpr Vector2& normalize_fast()
+    {
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            const auto len_sq = length_squared();
+            if (len_sq < epsilon * epsilon)
+            {
+                throw std::runtime_error("Cannot normalize zero-length vector");
+            }
+            const auto inv_len = detail::fast_inverse_sqrt(len_sq);
+            x *= inv_len;
+            y *= inv_len;
+        }
+        else
+        {
+            normalize();
+        }
+        return *this;
+    }
+
     // --
     T x, y;
 };
