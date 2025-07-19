@@ -208,3 +208,53 @@ TEST_F(Vector2Test, DivisionAssignmentByZero)
     Vector2f vec = v1;
     EXPECT_THROW(vec /= 0.0f, std::runtime_error);
 }
+
+TEST_F(Vector2Test, StaticAdd)
+{
+    auto result = Vector2f::add(v1, v2);
+    EXPECT_FLOAT_EQ(result.x, 4.0f);
+    EXPECT_FLOAT_EQ(result.y, 6.0f);
+}
+
+TEST_F(Vector2Test, StaticAddScalar)
+{
+    auto result = Vector2f::add_scalar(v1, 2.0f);
+    EXPECT_FLOAT_EQ(result.x, 5.0f);
+    EXPECT_FLOAT_EQ(result.y, 6.0f);
+}
+
+TEST_F(Vector2Test, StaticSubtract)
+{
+    auto result = Vector2f::subtract(v1, v2);
+    EXPECT_FLOAT_EQ(result.x, 2.0f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+}
+
+TEST_F(Vector2Test, StaticNegate)
+{
+    auto result = Vector2f::negate(v1);
+    EXPECT_FLOAT_EQ(result.x, -3.0f);
+    EXPECT_FLOAT_EQ(result.y, -4.0f);
+}
+
+TEST_F(Vector2Test, StaticInverse)
+{
+    Vector2f vec(2.0f, 4.0f);
+    auto result = Vector2f::inverse(vec);
+    EXPECT_FLOAT_EQ(result.x, 0.5f);
+    EXPECT_FLOAT_EQ(result.y, 0.25f);
+}
+
+TEST_F(Vector2Test, StaticInverseZero)
+{
+    Vector2f vec(0.0f, 4.0f);
+    EXPECT_THROW(Vector2f::inverse(vec), std::runtime_error);
+}
+
+TEST_F(Vector2Test, StaticInverseSafe)
+{
+    Vector2f vec(0.0f, 4.0f);
+    auto result = Vector2f::inverse_safe(vec, 1.0f);
+    EXPECT_FLOAT_EQ(result.x, 1.0f);
+    EXPECT_FLOAT_EQ(result.y, 0.25f);
+}
