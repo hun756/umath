@@ -1487,6 +1487,82 @@ class alignas(sizeof(T) * 2) Vector2
         return distance_squared(*this, other);
     }
 
+    constexpr precision_type distance(const Vector2& other) const noexcept
+    {
+        return distance(*this, other);
+    }
+
+    constexpr precision_type distance_fast(const Vector2& other) const noexcept
+    {
+        return distance_fast(*this, other);
+    }
+
+    constexpr T manhattan_distance(const Vector2& other) const noexcept
+    {
+        return manhattan_distance(*this, other);
+    }
+
+    constexpr T chebyshev_distance(const Vector2& other) const noexcept
+    {
+        return chebyshev_distance(*this, other);
+    }
+
+    constexpr precision_type angle_between(const Vector2& other) const
+    {
+        return angle_between(*this, other);
+    }
+
+    constexpr precision_type angle_to(const Vector2& other) const noexcept
+    {
+        return fast_angle(*this, other);
+    }
+
+    static constexpr int compare(const Vector2& a,
+                                 const Vector2& b,
+                                 ComparisonMode mode = ComparisonMode::LEXICOGRAPHIC) noexcept
+    {
+        switch (mode)
+        {
+            case ComparisonMode::LEXICOGRAPHIC:
+                if (detail::approximately_equal(a.x, b.x, epsilon))
+                {
+                    if (detail::approximately_equal(a.y, b.y, epsilon))
+                        return 0;
+                    return a.y < b.y ? -1 : 1;
+                }
+                return a.x < b.x ? -1 : 1;
+
+            case ComparisonMode::MAGNITUDE:
+            {
+                const auto len_a = a.length_squared();
+                const auto len_b = b.length_squared();
+                if (detail::approximately_equal(len_a, len_b, epsilon))
+                    return 0;
+                return len_a < len_b ? -1 : 1;
+            }
+
+            case ComparisonMode::ANGLE:
+            {
+                const auto angle_a = a.angle();
+                const auto angle_b = b.angle();
+                if (detail::approximately_equal(static_cast<T>(angle_a),
+                                                static_cast<T>(angle_b),
+                                                epsilon))
+                    return 0;
+                return angle_a < angle_b ? -1 : 1;
+            }
+
+            case ComparisonMode::MANHATTAN:
+            {
+                const auto dist_a = std::abs(a.x) + std::abs(a.y);
+                const auto dist_b = std::abs(b.x) + std::abs(b.y);
+                if (detail::approximately_equal(dist_a, dist_b, epsilon))
+                    return 0;
+                return dist_a < dist_b ? -1 : 1;
+            }
+        }
+        return 0;
+    }
 
     // --
     T x, y;
