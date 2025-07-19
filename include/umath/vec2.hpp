@@ -1564,6 +1564,110 @@ class alignas(sizeof(T) * 2) Vector2
         return 0;
     }
 
+    [[nodiscard]] constexpr Vector2 abs() const noexcept
+    {
+        return {std::abs(x), std::abs(y)};
+    }
+
+    [[nodiscard]] constexpr Vector2 sign() const noexcept
+    {
+        return {x > T{} ? T{1} : (x < T{} ? T{-1} : T{}), y > T{} ? T{1} : (y < T{} ? T{-1} : T{})};
+    }
+
+    [[nodiscard]] constexpr T min_component() const noexcept
+    {
+        return std::min(x, y);
+    }
+
+    [[nodiscard]] constexpr T max_component() const noexcept
+    {
+        return std::max(x, y);
+    }
+
+    [[nodiscard]] constexpr size_type min_component_index() const noexcept
+    {
+        return x <= y ? 0 : 1;
+    }
+
+    [[nodiscard]] constexpr size_type max_component_index() const noexcept
+    {
+        return x >= y ? 0 : 1;
+    }
+
+    [[nodiscard]] constexpr T sum() const noexcept
+    {
+        return x + y;
+    }
+
+    [[nodiscard]] constexpr T product() const noexcept
+    {
+        return x * y;
+    }
+
+    constexpr Vector2& operator+=(const Vector2& rhs) noexcept
+    {
+        x += rhs.x;
+        y += rhs.y;
+        return *this;
+    }
+
+    constexpr Vector2& operator+=(T scalar) noexcept
+    {
+        x += scalar;
+        y += scalar;
+        return *this;
+    }
+
+    constexpr Vector2& operator-=(const Vector2& rhs) noexcept
+    {
+        x -= rhs.x;
+        y -= rhs.y;
+        return *this;
+    }
+
+    constexpr Vector2& operator-=(T scalar) noexcept
+    {
+        x -= scalar;
+        y -= scalar;
+        return *this;
+    }
+
+    constexpr Vector2& operator*=(T scalar) noexcept
+    {
+        x *= scalar;
+        y *= scalar;
+        return *this;
+    }
+
+    constexpr Vector2& operator*=(const Vector2& rhs) noexcept
+    {
+        x *= rhs.x;
+        y *= rhs.y;
+        return *this;
+    }
+
+    constexpr Vector2& operator/=(T scalar)
+    {
+        if (std::abs(scalar) < epsilon)
+        {
+            throw std::runtime_error("Division by zero or near-zero value");
+        }
+        x /= scalar;
+        y /= scalar;
+        return *this;
+    }
+
+    constexpr Vector2& operator/=(const Vector2& rhs)
+    {
+        if (std::abs(rhs.x) < epsilon || std::abs(rhs.y) < epsilon)
+        {
+            throw std::runtime_error("Division by zero or near-zero value");
+        }
+        x /= rhs.x;
+        y /= rhs.y;
+        return *this;
+    }
+
     // --
     T x, y;
 };
