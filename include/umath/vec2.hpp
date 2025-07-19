@@ -1104,6 +1104,109 @@ class alignas(sizeof(T) * 2) Vector2
         return rotate(v, angle_rad, out);
     }
 
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector rotate_around(const Vector2& v,
+                                                precision_type angle_rad,
+                                                const Vector2& pivot,
+                                                OutputVector* out = nullptr) noexcept
+    {
+        const auto cos_a = std::cos(angle_rad);
+        const auto sin_a = std::sin(angle_rad);
+        const auto dx = v.x - pivot.x;
+        const auto dy = v.y - pivot.y;
+        const auto result = OutputVector{static_cast<T>(dx * cos_a - dy * sin_a + pivot.x),
+                                         static_cast<T>(dx * sin_a + dy * cos_a + pivot.y)};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector lerp(const Vector2& a,
+                                       const Vector2& b,
+                                       T t,
+                                       OutputVector* out = nullptr) noexcept
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+        const auto result =
+            OutputVector{a.x + (b.x - a.x) * clamped_t, a.y + (b.y - a.y) * clamped_t};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector lerp_unclamped(const Vector2& a,
+                                                 const Vector2& b,
+                                                 T t,
+                                                 OutputVector* out = nullptr) noexcept
+    {
+        const auto result = OutputVector{a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static constexpr OutputVector slerp(const Vector2& a,
+                                        const Vector2& b,
+                                        T t,
+                                        OutputVector* out = nullptr)
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+        const auto angle_a = a.angle();
+        const auto angle_b = b.angle();
+        auto angle_diff = angle_a - angle_b;
+
+        if (angle_diff < 0)
+            angle_diff += TWO_PI;
+        if (angle_diff > PI)
+            angle_diff -= TWO_PI;
+
+        const auto result_angle = angle_a + angle_diff * clamped_t;
+        const auto len_a = a.length();
+        const auto len_b = b.length();
+        const auto result_length = len_a + (len_b - len_a) * clamped_t;
+
+        const auto result = OutputVector{static_cast<T>(result_length * std::cos(result_angle)),
+                                         static_cast<T>(result_length * std::sin(result_angle))};
+        if (out)
+            *out = result;
+        return result;
+    }
+
     // --
     T x, y;
 };
