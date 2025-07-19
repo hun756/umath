@@ -71,3 +71,30 @@ TEST_F(Vector2Test, TypeConversionConstructor)
     EXPECT_FLOAT_EQ(float_vec.x, 3.0f);
     EXPECT_FLOAT_EQ(float_vec.y, 4.0f);
 }
+
+TEST_F(Vector2Test, StaticConstants)
+{
+    EXPECT_EQ(Vector2f::zero(), Vector2f(0.0f, 0.0f));
+    EXPECT_EQ(Vector2f::one(), Vector2f(1.0f, 1.0f));
+    EXPECT_EQ(Vector2f::unit_x(), Vector2f(1.0f, 0.0f));
+    EXPECT_EQ(Vector2f::unit_y(), Vector2f(0.0f, 1.0f));
+    EXPECT_EQ(Vector2f::up(), Vector2f(0.0f, 1.0f));
+    EXPECT_EQ(Vector2f::down(), Vector2f(0.0f, -1.0f));
+    EXPECT_EQ(Vector2f::left(), Vector2f(-1.0f, 0.0f));
+    EXPECT_EQ(Vector2f::right(), Vector2f(1.0f, 0.0f));
+}
+
+TEST_F(Vector2Test, CreateMethod)
+{
+    auto vec = Vector2f::create(2.0f, 3.0f);
+    EXPECT_FLOAT_EQ(vec.x, 2.0f);
+    EXPECT_FLOAT_EQ(vec.y, 3.0f);
+}
+
+TEST_F(Vector2Test, FromArrayMethod)
+{
+    std::array<float, 4> arr = {1.0f, 2.0f, 3.0f, 4.0f};
+    auto vec = Vector2f::from_array(arr, 1);
+    EXPECT_FLOAT_EQ(vec.x, 2.0f);
+    EXPECT_FLOAT_EQ(vec.y, 3.0f);
+}
