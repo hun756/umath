@@ -258,3 +258,83 @@ TEST_F(Vector2Test, StaticInverseSafe)
     EXPECT_FLOAT_EQ(result.x, 1.0f);
     EXPECT_FLOAT_EQ(result.y, 0.25f);
 }
+
+TEST_F(Vector2Test, LengthSquared)
+{
+    EXPECT_FLOAT_EQ(v1.length_squared(), 25.0f);
+}
+
+TEST_F(Vector2Test, Length)
+{
+    EXPECT_FLOAT_EQ(v1.length(), 5.0f);
+}
+
+TEST_F(Vector2Test, FastLength)
+{
+    EXPECT_NEAR(v1.fast_length(), 5.0f, 0.5f);
+}
+
+TEST_F(Vector2Test, DotProduct)
+{
+    float dot = Vector2f::dot(v1, v2);
+    EXPECT_FLOAT_EQ(dot, 11.0f);
+}
+
+TEST_F(Vector2Test, DotProductMemberFunction)
+{
+    float dot = v1.dot(v2);
+    EXPECT_FLOAT_EQ(dot, 11.0f);
+}
+
+TEST_F(Vector2Test, CrossProduct)
+{
+    float cross = Vector2f::cross(v1, v2);
+    EXPECT_FLOAT_EQ(cross, 2.0f);
+}
+
+TEST_F(Vector2Test, CrossProductMemberFunction)
+{
+    float cross = v1.cross(v2);
+    EXPECT_FLOAT_EQ(cross, 2.0f);
+}
+
+TEST_F(Vector2Test, Normalization)
+{
+    auto normalized = Vector2f::normalize(v1);
+    EXPECT_FLOAT_EQ(normalized.x, 0.6f);
+    EXPECT_FLOAT_EQ(normalized.y, 0.8f);
+    EXPECT_NEAR(normalized.length(), 1.0f, epsilon);
+}
+
+TEST_F(Vector2Test, NormalizationZeroVector)
+{
+    EXPECT_THROW(Vector2f::normalize(zero_vec), std::runtime_error);
+}
+
+TEST_F(Vector2Test, NormalizeMemberFunction)
+{
+    Vector2f vec = v1;
+    vec.normalize();
+    EXPECT_FLOAT_EQ(vec.x, 0.6f);
+    EXPECT_FLOAT_EQ(vec.y, 0.8f);
+    EXPECT_NEAR(vec.length(), 1.0f, epsilon);
+}
+
+TEST_F(Vector2Test, FastNormalization)
+{
+    auto normalized = Vector2f::normalize_fast(v1);
+    EXPECT_NEAR(normalized.length(), 1.0f, 0.01f);
+}
+
+TEST_F(Vector2Test, IsNormalized)
+{
+    EXPECT_FALSE(v1.is_normalized());
+    auto normalized = Vector2f::normalize(v1);
+    EXPECT_TRUE(normalized.is_normalized());
+}
+
+TEST_F(Vector2Test, IsZero)
+{
+    EXPECT_TRUE(zero_vec.is_zero());
+    EXPECT_FALSE(v1.is_zero());
+}
