@@ -1454,6 +1454,40 @@ class alignas(sizeof(T) * 2) Vector2
         return *this;
     }
 
+    constexpr Vector2& inverse()
+    {
+        if (std::abs(x) < epsilon || std::abs(y) < epsilon)
+        {
+            throw std::runtime_error("Inversion of zero or near-zero value");
+        }
+        x = T{1} / x;
+        y = T{1} / y;
+        return *this;
+    }
+
+    constexpr Vector2& inverse_safe(T default_value = T{}) noexcept
+    {
+        x = std::abs(x) < epsilon ? default_value : T{1} / x;
+        y = std::abs(y) < epsilon ? default_value : T{1} / y;
+        return *this;
+    }
+
+    constexpr T dot(const Vector2& other) const noexcept
+    {
+        return x * other.x + y * other.y;
+    }
+
+    constexpr T cross(const Vector2& other) const noexcept
+    {
+        return x * other.y - y * other.x;
+    }
+
+    constexpr T distance_squared(const Vector2& other) const noexcept
+    {
+        return distance_squared(*this, other);
+    }
+
+
     // --
     T x, y;
 };
