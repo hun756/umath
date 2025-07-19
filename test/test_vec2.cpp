@@ -98,3 +98,75 @@ TEST_F(Vector2Test, FromArrayMethod)
     EXPECT_FLOAT_EQ(vec.x, 2.0f);
     EXPECT_FLOAT_EQ(vec.y, 3.0f);
 }
+
+TEST_F(Vector2Test, VectorAddition)
+{
+    auto result = v1 + v2;
+    EXPECT_FLOAT_EQ(result.x, 4.0f);
+    EXPECT_FLOAT_EQ(result.y, 6.0f);
+}
+
+TEST_F(Vector2Test, VectorSubtraction)
+{
+    auto result = v1 - v2;
+    EXPECT_FLOAT_EQ(result.x, 2.0f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+}
+
+TEST_F(Vector2Test, ScalarMultiplication)
+{
+    auto result = v1 * 2.0f;
+    EXPECT_FLOAT_EQ(result.x, 6.0f);
+    EXPECT_FLOAT_EQ(result.y, 8.0f);
+
+    auto result2 = 2.0f * v1;
+    EXPECT_FLOAT_EQ(result2.x, 6.0f);
+    EXPECT_FLOAT_EQ(result2.y, 8.0f);
+}
+
+TEST_F(Vector2Test, ComponentWiseMultiplication)
+{
+    auto result = v1 * v2;
+    EXPECT_FLOAT_EQ(result.x, 3.0f);
+    EXPECT_FLOAT_EQ(result.y, 8.0f);
+}
+
+TEST_F(Vector2Test, ScalarDivision)
+{
+    auto result = v1 / 2.0f;
+    EXPECT_FLOAT_EQ(result.x, 1.5f);
+    EXPECT_FLOAT_EQ(result.y, 2.0f);
+}
+
+TEST_F(Vector2Test, ScalarDivisionByZero)
+{
+    EXPECT_THROW(v1 / 0.0f, std::runtime_error);
+}
+
+TEST_F(Vector2Test, ComponentWiseDivision)
+{
+    Vector2f divisor(2.0f, 4.0f);
+    auto result = v1 / divisor;
+    EXPECT_FLOAT_EQ(result.x, 1.5f);
+    EXPECT_FLOAT_EQ(result.y, 1.0f);
+}
+
+TEST_F(Vector2Test, ComponentWiseDivisionByZero)
+{
+    Vector2f divisor(0.0f, 4.0f);
+    EXPECT_THROW(v1 / divisor, std::runtime_error);
+}
+
+TEST_F(Vector2Test, UnaryMinus)
+{
+    auto result = -v1;
+    EXPECT_FLOAT_EQ(result.x, -3.0f);
+    EXPECT_FLOAT_EQ(result.y, -4.0f);
+}
+
+TEST_F(Vector2Test, UnaryPlus)
+{
+    auto result = +v1;
+    EXPECT_FLOAT_EQ(result.x, 3.0f);
+    EXPECT_FLOAT_EQ(result.y, 4.0f);
+}
