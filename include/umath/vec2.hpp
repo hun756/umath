@@ -1236,6 +1236,56 @@ class alignas(sizeof(T) * 2) Vector2
         return result;
     }
 
+    template <typename OutputVector = Vector2>
+    static constexpr OutputVector cubic_bezier(const Vector2& p0,
+                                               const Vector2& p1,
+                                               const Vector2& p2,
+                                               const Vector2& p3,
+                                               T t,
+                                               OutputVector* out = nullptr) noexcept
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+        const auto one_minus_t = T{1} - clamped_t;
+        const auto one_minus_t2 = one_minus_t * one_minus_t;
+        const auto t2 = clamped_t * clamped_t;
+
+        const auto one_minus_t3 = one_minus_t2 * one_minus_t;
+        const auto t3 = t2 * clamped_t;
+        const auto one_minus_t2_3t = one_minus_t2 * T{3} * clamped_t;
+        const auto one_minus_t_3t2 = one_minus_t * T{3} * t2;
+
+        const auto result = OutputVector{
+            one_minus_t3 * p0.x + one_minus_t2_3t * p1.x + one_minus_t_3t2 * p2.x + t3 * p3.x,
+            one_minus_t3 * p0.y + one_minus_t2_3t * p1.y + one_minus_t_3t2 * p2.y + t3 * p3.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
+    template <typename OutputVector = Vector2>
+    static constexpr OutputVector hermite(const Vector2& p0,
+                                          const Vector2& m0,
+                                          const Vector2& p1,
+                                          const Vector2& m1,
+                                          T t,
+                                          OutputVector* out = nullptr) noexcept
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+        const auto t2 = clamped_t * clamped_t;
+        const auto t3 = t2 * clamped_t;
+
+        const auto h00 = T{2} * t3 - T{3} * t2 + T{1};
+        const auto h10 = t3 - T{2} * t2 + clamped_t;
+        const auto h01 = -T{2} * t3 + T{3} * t2;
+        const auto h11 = t3 - t2;
+
+        const auto result = OutputVector{h00 * p0.x + h10 * m0.x + h01 * p1.x + h11 * m1.x,
+                                         h00 * p0.y + h10 * m0.y + h01 * p1.y + h11 * m1.y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
     // --
     T x, y;
 };
