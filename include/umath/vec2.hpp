@@ -1286,6 +1286,55 @@ class alignas(sizeof(T) * 2) Vector2
         return result;
     }
 
+    template <typename OutputVector = Vector2>
+    static constexpr OutputVector catmull_rom(const Vector2& p0,
+                                              const Vector2& p1,
+                                              const Vector2& p2,
+                                              const Vector2& p3,
+                                              T t,
+                                              T tension = T{0.5},
+                                              OutputVector* out = nullptr) noexcept
+    {
+        const auto clamped_t = std::clamp(t, T{}, T{1});
+
+        if (clamped_t == T{})
+        {
+            const auto result = OutputVector{p1.x, p1.y};
+            if (out)
+                *out = result;
+            return result;
+        }
+
+        if (clamped_t == T{1})
+        {
+            const auto result = OutputVector{p2.x, p2.y};
+            if (out)
+                *out = result;
+            return result;
+        }
+
+        const auto t2 = clamped_t * clamped_t;
+        const auto t3 = t2 * clamped_t;
+
+        const auto h00 = T{2} * t3 - T{3} * t2 + T{1};
+        const auto h10 = t3 - T{2} * t2 + clamped_t;
+        const auto h01 = -T{2} * t3 + T{3} * t2;
+        const auto h11 = t3 - t2;
+
+        const auto alpha = (T{1} - tension) / T{2};
+
+        const auto m0x = alpha * (p2.x - p0.x);
+        const auto m0y = alpha * (p2.y - p0.y);
+        const auto m1x = alpha * (p3.x - p1.x);
+        const auto m1y = alpha * (p3.y - p1.y);
+
+        const auto result = OutputVector{h00 * p1.x + h10 * m0x + h01 * p2.x + h11 * m1x,
+                                         h00 * p1.y + h10 * m0y + h01 * p2.y + h11 * m1y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
     // --
     T x, y;
 };
