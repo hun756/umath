@@ -1,5 +1,6 @@
 #include <benchmark/benchmark.h>
 #include <umath/umath.hpp>
+
 static void BM_Dummy(benchmark::State& state)
 {
     for (auto _ : state)
@@ -10,3 +11,5 @@ static void BM_Dummy(benchmark::State& state)
 }
 
 BENCHMARK(BM_Dummy);
+
+BENCHMARK_MAIN();
