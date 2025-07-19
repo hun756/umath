@@ -374,3 +374,72 @@ TEST_F(Vector2Test, ChebyshevDistance)
     float chebyshev = Vector2f::chebyshev_distance(v1, v2);
     EXPECT_FLOAT_EQ(chebyshev, 2.0f);
 }
+
+TEST_F(Vector2Test, AngleBetween)
+{
+    Vector2f v_x(1.0f, 0.0f);
+    Vector2f v_y(0.0f, 1.0f);
+    float angle = Vector2f::angle_between(v_x, v_y);
+    EXPECT_NEAR(angle, PI / 2.0f, epsilon);
+}
+
+TEST_F(Vector2Test, AngleBetweenZeroVector)
+{
+    EXPECT_THROW(Vector2f::angle_between(zero_vec, v1), std::runtime_error);
+}
+
+TEST_F(Vector2Test, VectorAngle)
+{
+    Vector2f v_45deg(1.0f, 1.0f);
+    float angle = v_45deg.angle();
+    EXPECT_NEAR(angle, PI / 4.0f, epsilon);
+}
+
+TEST_F(Vector2Test, FastAngle)
+{
+    Vector2f v_from(0.0f, 0.0f);
+    Vector2f v_to(1.0f, 1.0f);
+    float angle = Vector2f::fast_angle(v_from, v_to);
+    EXPECT_NEAR(angle, PI / 4.0f, 0.1f);
+}
+
+TEST_F(Vector2Test, Rotation)
+{
+    Vector2f vec(1.0f, 0.0f);
+    auto rotated = Vector2f::rotate(vec, PI / 2.0f);
+    EXPECT_NEAR(rotated.x, 0.0f, epsilon);
+    EXPECT_NEAR(rotated.y, 1.0f, epsilon);
+}
+
+TEST_F(Vector2Test, FastRotation)
+{
+    Vector2f vec(1.0f, 0.0f);
+    auto rotated = Vector2f::rotate_fast(vec, PI / 2.0f);
+    EXPECT_NEAR(rotated.x, 0.0f, 0.01f);
+    EXPECT_NEAR(rotated.y, 1.0f, 0.01f);
+}
+
+TEST_F(Vector2Test, RotationAroundPivot)
+{
+    Vector2f vec(2.0f, 0.0f);
+    Vector2f pivot(1.0f, 0.0f);
+    auto rotated = Vector2f::rotate_around(vec, PI / 2.0f, pivot);
+    EXPECT_NEAR(rotated.x, 1.0f, epsilon);
+    EXPECT_NEAR(rotated.y, 1.0f, epsilon);
+}
+
+TEST_F(Vector2Test, Perpendicular)
+{
+    Vector2f vec(1.0f, 0.0f);
+    auto perp = Vector2f::perpendicular(vec);
+    EXPECT_FLOAT_EQ(perp.x, 0.0f);
+    EXPECT_FLOAT_EQ(perp.y, 1.0f);
+}
+
+TEST_F(Vector2Test, PerpendicularCCW)
+{
+    Vector2f vec(1.0f, 0.0f);
+    auto perp = Vector2f::perpendicular_ccw(vec);
+    EXPECT_FLOAT_EQ(perp.x, 0.0f);
+    EXPECT_FLOAT_EQ(perp.y, -1.0f);
+}
