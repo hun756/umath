@@ -1335,6 +1335,26 @@ class alignas(sizeof(T) * 2) Vector2
         return result;
     }
 
+    template <typename OutputVector = Vector2
+#ifndef MATH_CONCEPTS_ENABLED
+              ,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
+#endif
+              >
+#ifdef MATH_CONCEPTS_ENABLED
+    requires Vector2Like<OutputVector, T>
+#endif
+    static OutputVector random(precision_type scale = precision_type{1},
+                               OutputVector* out = nullptr)
+    {
+        const auto x = static_cast<T>(detail::normal_dist(detail::gen) * scale);
+        const auto y = static_cast<T>(detail::normal_dist(detail::gen) * scale);
+        const auto result = OutputVector{x, y};
+        if (out)
+            *out = result;
+        return result;
+    }
+
     // --
     T x, y;
 };
