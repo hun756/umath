@@ -719,3 +719,45 @@ TEST_F(Vector2Test, StdHashSpecialization)
     vec_set.insert(vec2);
     EXPECT_EQ(vec_set.size(), 1);
 }
+
+TEST_F(Vector2Test, ImmutableVector2Creation)
+{
+    auto immutable = Vector2f::make_immutable(3.0f, 4.0f);
+    EXPECT_FLOAT_EQ(immutable.x(), 3.0f);
+    EXPECT_FLOAT_EQ(immutable.y(), 4.0f);
+}
+
+TEST_F(Vector2Test, ImmutableVector2FromVector2)
+{
+    Vector2f vec(3.0f, 4.0f);
+    auto immutable = Vector2f::make_immutable(vec);
+    EXPECT_FLOAT_EQ(immutable.x(), 3.0f);
+    EXPECT_FLOAT_EQ(immutable.y(), 4.0f);
+}
+
+TEST_F(Vector2Test, ImmutableVector2Conversion)
+{
+    auto immutable = Vector2f::make_immutable(3.0f, 4.0f);
+    Vector2f vec = immutable;
+    EXPECT_FLOAT_EQ(vec.x, 3.0f);
+    EXPECT_FLOAT_EQ(vec.y, 4.0f);
+}
+
+TEST_F(Vector2Test, ImmutableVector2TypeConversion)
+{
+    auto immutable_float = Vector2f::make_immutable(3.0f, 4.0f);
+    auto immutable_double = immutable_float.template as<double>();
+    EXPECT_DOUBLE_EQ(immutable_double.x(), 3.0);
+    EXPECT_DOUBLE_EQ(immutable_double.y(), 4.0);
+}
+
+TEST_F(Vector2Test, ImmutableVector2StaticConstants)
+{
+    auto zero = Vector2f::zero_immutable();
+    EXPECT_FLOAT_EQ(zero.x(), 0.0f);
+    EXPECT_FLOAT_EQ(zero.y(), 0.0f);
+
+    auto one = Vector2f::one_immutable();
+    EXPECT_FLOAT_EQ(one.x(), 1.0f);
+    EXPECT_FLOAT_EQ(one.y(), 1.0f);
+}
