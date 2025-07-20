@@ -380,7 +380,7 @@ TEST_F(Vector2Test, AngleBetween)
     Vector2f v_x(1.0f, 0.0f);
     Vector2f v_y(0.0f, 1.0f);
     float angle = Vector2f::angle_between(v_x, v_y);
-    EXPECT_NEAR(angle, PI / 2.0f, epsilon);
+    EXPECT_NEAR(angle, static_cast<float>(PI) / 2.0f, epsilon);
 }
 
 TEST_F(Vector2Test, AngleBetweenZeroVector)
@@ -414,7 +414,7 @@ TEST_F(Vector2Test, Rotation)
 TEST_F(Vector2Test, FastRotation)
 {
     Vector2f vec(1.0f, 0.0f);
-    auto rotated = Vector2f::rotate_fast(vec, PI / 2.0f);
+    auto rotated = Vector2f::rotate_fast(vec, static_cast<float>(PI) / 2.0f);
     EXPECT_NEAR(rotated.x, 0.0f, 0.01f);
     EXPECT_NEAR(rotated.y, 1.0f, 0.01f);
 }
@@ -423,7 +423,7 @@ TEST_F(Vector2Test, RotationAroundPivot)
 {
     Vector2f vec(2.0f, 0.0f);
     Vector2f pivot(1.0f, 0.0f);
-    auto rotated = Vector2f::rotate_around(vec, PI / 2.0f, pivot);
+    auto rotated = Vector2f::rotate_around(vec, static_cast<float>(PI) / 2.0f, pivot);
     EXPECT_NEAR(rotated.x, 1.0f, epsilon);
     EXPECT_NEAR(rotated.y, 1.0f, epsilon);
 }
@@ -544,4 +544,74 @@ TEST_F(Vector2Test, CatmullRomSpline)
     auto end = Vector2f::catmull_rom(p0, p1, p2, p3, 1.0f);
     EXPECT_FLOAT_EQ(end.x, 2.0f);
     EXPECT_FLOAT_EQ(end.y, 1.0f);
+}
+
+
+TEST_F(Vector2Test, RandomVector)
+{
+    auto random1 = Vector2f::random(1.0f);
+    auto random2 = Vector2f::random(1.0f);
+
+    EXPECT_FALSE(random1.approximately_equals(random2, 0.001f));
+
+    EXPECT_NEAR(random1.length(), 1.0f, 0.5f);
+}
+
+TEST_F(Vector2Test, RandomFastVector)
+{
+    auto random1 = Vector2f::random_fast(1.0f);
+    auto random2 = Vector2f::random_fast(1.0f);
+
+    EXPECT_FALSE(random1.approximately_equals(random2, 0.001f));
+    EXPECT_NEAR(random1.length(), 1.0f, epsilon);
+}
+
+TEST_F(Vector2Test, RandomBox)
+{
+    auto random = Vector2f::random_box(-1.0f, 1.0f, -2.0f, 2.0f);
+
+    EXPECT_GE(random.x, -1.0f);
+    EXPECT_LE(random.x, 1.0f);
+    EXPECT_GE(random.y, -2.0f);
+    EXPECT_LE(random.y, 2.0f);
+}
+
+TEST_F(Vector2Test, EqualityOperator)
+{
+    Vector2f vec1(3.0f, 4.0f);
+    Vector2f vec2(3.0f, 4.0f);
+    Vector2f vec3(3.1f, 4.0f);
+
+    EXPECT_TRUE(vec1 == vec2);
+    EXPECT_FALSE(vec1 == vec3);
+}
+
+TEST_F(Vector2Test, InequalityOperator)
+{
+    Vector2f vec1(3.0f, 4.0f);
+    Vector2f vec2(3.1f, 4.0f);
+
+    EXPECT_TRUE(vec1 != vec2);
+    EXPECT_FALSE(vec1 != vec1);
+}
+
+TEST_F(Vector2Test, ApproximatelyEquals)
+{
+    Vector2f vec1(3.0f, 4.0f);
+    Vector2f vec2(3.0001f, 4.0001f);
+
+    EXPECT_TRUE(vec1.approximately_equals(vec2, 0.001f));
+    EXPECT_FALSE(vec1.approximately_equals(vec2, 0.00001f));
+}
+
+TEST_F(Vector2Test, ComparisonModes)
+{
+    Vector2f shorter(1.0f, 0.0f);
+    Vector2f longer(2.0f, 0.0f);
+
+    EXPECT_LT(Vector2f::compare(shorter, longer, ComparisonMode::LEXICOGRAPHIC), 0);
+
+    EXPECT_LT(Vector2f::compare(shorter, longer, ComparisonMode::MAGNITUDE), 0);
+
+    EXPECT_LT(Vector2f::compare(shorter, longer, ComparisonMode::MANHATTAN), 0);
 }
