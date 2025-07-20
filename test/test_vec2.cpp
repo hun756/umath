@@ -497,3 +497,51 @@ TEST_F(Vector2Test, SmootherStep)
     EXPECT_FLOAT_EQ(result.x, 5.0f);
     EXPECT_FLOAT_EQ(result.y, 5.0f);
 }
+
+TEST_F(Vector2Test, CubicBezier)
+{
+    Vector2f p0(0.0f, 0.0f);
+    Vector2f p1(1.0f, 2.0f);
+    Vector2f p2(2.0f, 2.0f);
+    Vector2f p3(3.0f, 0.0f);
+
+    auto start = Vector2f::cubic_bezier(p0, p1, p2, p3, 0.0f);
+    EXPECT_FLOAT_EQ(start.x, 0.0f);
+    EXPECT_FLOAT_EQ(start.y, 0.0f);
+
+    auto end = Vector2f::cubic_bezier(p0, p1, p2, p3, 1.0f);
+    EXPECT_FLOAT_EQ(end.x, 3.0f);
+    EXPECT_FLOAT_EQ(end.y, 0.0f);
+}
+
+TEST_F(Vector2Test, HermiteInterpolation)
+{
+    Vector2f p0(0.0f, 0.0f);
+    Vector2f m0(1.0f, 0.0f);
+    Vector2f p1(1.0f, 1.0f);
+    Vector2f m1(0.0f, 1.0f);
+
+    auto start = Vector2f::hermite(p0, m0, p1, m1, 0.0f);
+    EXPECT_FLOAT_EQ(start.x, 0.0f);
+    EXPECT_FLOAT_EQ(start.y, 0.0f);
+
+    auto end = Vector2f::hermite(p0, m0, p1, m1, 1.0f);
+    EXPECT_FLOAT_EQ(end.x, 1.0f);
+    EXPECT_FLOAT_EQ(end.y, 1.0f);
+}
+
+TEST_F(Vector2Test, CatmullRomSpline)
+{
+    Vector2f p0(0.0f, 0.0f);
+    Vector2f p1(1.0f, 1.0f);
+    Vector2f p2(2.0f, 1.0f);
+    Vector2f p3(3.0f, 0.0f);
+
+    auto start = Vector2f::catmull_rom(p0, p1, p2, p3, 0.0f);
+    EXPECT_FLOAT_EQ(start.x, 1.0f);
+    EXPECT_FLOAT_EQ(start.y, 1.0f);
+
+    auto end = Vector2f::catmull_rom(p0, p1, p2, p3, 1.0f);
+    EXPECT_FLOAT_EQ(end.x, 2.0f);
+    EXPECT_FLOAT_EQ(end.y, 1.0f);
+}
