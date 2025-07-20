@@ -782,3 +782,24 @@ TEST_F(Vector2Test, TypeAliases)
     EXPECT_EQ(vec_i32.x, 1);
     EXPECT_EQ(vec_u64.x, 1);
 }
+
+// Todo: Uncomment when structured bindings are supported
+// TEST_F(Vector2Test, StructuredBinding)
+// {
+//     Vector2f vec(3.0f, 4.0f);
+//     auto [x, y] = vec;
+//     EXPECT_FLOAT_EQ(x, 3.0f);
+//     EXPECT_FLOAT_EQ(y, 4.0f);
+// }
+
+TEST_F(Vector2Test, StdGet)
+{
+    Vector2f vec(3.0f, 4.0f);
+    EXPECT_FLOAT_EQ(std::get<0>(vec), 3.0f);
+    EXPECT_FLOAT_EQ(std::get<1>(vec), 4.0f);
+}
+
+TEST_F(Vector2Test, TupleSize)
+{
+    EXPECT_EQ(std::tuple_size_v<Vector2f>, 2);
+}
