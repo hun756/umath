@@ -694,3 +694,28 @@ TEST_F(Vector2Test, Swap)
     EXPECT_FLOAT_EQ(vec2.x, 3.0f);
     EXPECT_FLOAT_EQ(vec2.y, 4.0f);
 }
+
+TEST_F(Vector2Test, HashFunction)
+{
+    Vector2f vec1(3.0f, 4.0f);
+    Vector2f vec2(3.0f, 4.0f);
+    Vector2f vec3(4.0f, 3.0f);
+
+    EXPECT_EQ(vec1.hash(), vec2.hash());
+    EXPECT_NE(vec1.hash(), vec3.hash());
+}
+
+TEST_F(Vector2Test, StdHashSpecialization)
+{
+    Vector2f vec1(3.0f, 4.0f);
+    Vector2f vec2(3.0f, 4.0f);
+
+    std::hash<Vector2f> hasher;
+    EXPECT_EQ(hasher(vec1), hasher(vec2));
+
+    std::unordered_set<Vector2f> vec_set;
+    vec_set.insert(vec1);
+    EXPECT_EQ(vec_set.size(), 1);
+    vec_set.insert(vec2);
+    EXPECT_EQ(vec_set.size(), 1);
+}
