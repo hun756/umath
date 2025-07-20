@@ -880,6 +880,7 @@ TEST_F(Vector2Test, NaNHandling)
     }
 }
 
+// Todo fix it!
 TEST_F(Vector2Test, VerySmallNumbers)
 {
     Vector2f tiny_vec(std::numeric_limits<float>::min() * 1000.0f,
@@ -1078,4 +1079,71 @@ TEST_F(Vector2PropertyTest, NormalizationPreservesDirection)
                 << "Normalized length incorrect for v=(" << v.x << "," << v.y << ")";
         }
     }
+}
+
+
+TEST_F(Vector2Test, FastOperationsConsistency)
+{
+    Vector2f vec(3.0f, 4.0f);
+
+    float regular_length = vec.length();
+    float fast_length = vec.fast_length();
+    EXPECT_NEAR(fast_length, regular_length, regular_length * 0.1f);
+
+    auto regular_norm = Vector2f::normalize(vec);
+    auto fast_norm = Vector2f::normalize_fast(vec);
+    EXPECT_NEAR(fast_norm.x, regular_norm.x, 0.01f);
+    EXPECT_NEAR(fast_norm.y, regular_norm.y, 0.01f);
+
+    float angle = PI / 6.0f;
+    auto regular_rot = Vector2f::rotate(vec, angle);
+    auto fast_rot = Vector2f::rotate_fast(vec, angle);
+    EXPECT_NEAR(fast_rot.x, regular_rot.x, 0.01f);
+    EXPECT_NEAR(fast_rot.y, regular_rot.y, 0.01f);
+}
+
+TEST_F(Vector2Test, MemoryLayout)
+{
+    Vector2f vec(3.0f, 4.0f);
+    float* ptr = reinterpret_cast<float*>(&vec);
+
+    EXPECT_FLOAT_EQ(ptr[0], 3.0f);
+    EXPECT_FLOAT_EQ(ptr[1], 4.0f);
+
+    EXPECT_EQ(&vec.y, &vec.x + 1);
+}
+
+TEST_F(Vector2Test, Alignment)
+{
+    EXPECT_EQ(alignof(Vector2f), sizeof(float) * 2);
+}
+
+TEST_F(Vector2Test, StaticConstantsThreadSafety)
+{
+    const auto& zero1 = Vector2f::zero();
+    const auto& zero2 = Vector2f::zero();
+
+    EXPECT_EQ(&zero1, &zero2);
+}
+
+TEST_F(Vector2Test, ComplexOperationChaining)
+{
+    Vector2f start(1.0f, 0.0f);
+    Vector2f end(0.0f, 1.0f);
+
+    auto result = Vector2f::normalize(Vector2f::lerp(start, end, 0.5f) + Vector2f(0.1f, 0.1f));
+
+    EXPECT_NEAR(result.length(), 1.0f, epsilon);
+}
+
+TEST_F(Vector2Test, GeometricOperations)
+{
+    Vector2f center(0.0f, 0.0f);
+    Vector2f point(3.0f, 4.0f);
+
+    auto rotated = Vector2f::rotate_around(point, PI / 2.0f, center);
+
+    EXPECT_NEAR(center.distance(rotated), center.distance(point), epsilon);
+
+    EXPECT_NEAR(Vector2f::dot(point, rotated), 0.0f, epsilon);
 }
