@@ -615,3 +615,82 @@ TEST_F(Vector2Test, ComparisonModes)
 
     EXPECT_LT(Vector2f::compare(shorter, longer, ComparisonMode::MANHATTAN), 0);
 }
+
+TEST_F(Vector2Test, AbsoluteValue)
+{
+    Vector2f vec(-3.0f, -4.0f);
+    auto abs_vec = vec.abs();
+    EXPECT_FLOAT_EQ(abs_vec.x, 3.0f);
+    EXPECT_FLOAT_EQ(abs_vec.y, 4.0f);
+}
+
+TEST_F(Vector2Test, Sign)
+{
+    Vector2f vec(-3.0f, 4.0f);
+    auto sign_vec = vec.sign();
+    EXPECT_FLOAT_EQ(sign_vec.x, -1.0f);
+    EXPECT_FLOAT_EQ(sign_vec.y, 1.0f);
+}
+
+TEST_F(Vector2Test, MinMaxComponent)
+{
+    Vector2f vec(3.0f, 7.0f);
+    EXPECT_FLOAT_EQ(vec.min_component(), 3.0f);
+    EXPECT_FLOAT_EQ(vec.max_component(), 7.0f);
+    EXPECT_EQ(vec.min_component_index(), 0);
+    EXPECT_EQ(vec.max_component_index(), 1);
+}
+
+TEST_F(Vector2Test, SumAndProduct)
+{
+    Vector2f vec(3.0f, 4.0f);
+    EXPECT_FLOAT_EQ(vec.sum(), 7.0f);
+    EXPECT_FLOAT_EQ(vec.product(), 12.0f);
+}
+
+TEST_F(Vector2Test, ArrayAccess)
+{
+    Vector2f vec(3.0f, 4.0f);
+    EXPECT_FLOAT_EQ(vec[0], 3.0f);
+    EXPECT_FLOAT_EQ(vec[1], 4.0f);
+
+    vec[0] = 5.0f;
+    EXPECT_FLOAT_EQ(vec.x, 5.0f);
+}
+
+TEST_F(Vector2Test, DataAccess)
+{
+    Vector2f vec(3.0f, 4.0f);
+    float* data = vec.data();
+    EXPECT_FLOAT_EQ(data[0], 3.0f);
+    EXPECT_FLOAT_EQ(data[1], 4.0f);
+}
+
+TEST_F(Vector2Test, ToArray)
+{
+    Vector2f vec(3.0f, 4.0f);
+    auto arr = vec.to_array();
+    EXPECT_FLOAT_EQ(arr[0], 3.0f);
+    EXPECT_FLOAT_EQ(arr[1], 4.0f);
+}
+
+TEST_F(Vector2Test, Clone)
+{
+    Vector2f original(3.0f, 4.0f);
+    auto cloned = original.clone();
+    EXPECT_FLOAT_EQ(cloned.x, 3.0f);
+    EXPECT_FLOAT_EQ(cloned.y, 4.0f);
+}
+
+TEST_F(Vector2Test, Swap)
+{
+    Vector2f vec1(3.0f, 4.0f);
+    Vector2f vec2(1.0f, 2.0f);
+
+    vec1.swap(vec2);
+
+    EXPECT_FLOAT_EQ(vec1.x, 1.0f);
+    EXPECT_FLOAT_EQ(vec1.y, 2.0f);
+    EXPECT_FLOAT_EQ(vec2.x, 3.0f);
+    EXPECT_FLOAT_EQ(vec2.y, 4.0f);
+}
