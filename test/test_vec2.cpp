@@ -761,3 +761,24 @@ TEST_F(Vector2Test, ImmutableVector2StaticConstants)
     EXPECT_FLOAT_EQ(one.x(), 1.0f);
     EXPECT_FLOAT_EQ(one.y(), 1.0f);
 }
+
+TEST_F(Vector2Test, TypeAliases)
+{
+    Vec2f vec_f(1.0f, 2.0f);
+    Vec2d vec_d(1.0, 2.0);
+    Vec2i vec_i(1, 2);
+
+    EXPECT_FLOAT_EQ(vec_f.x, 1.0f);
+    EXPECT_DOUBLE_EQ(vec_d.x, 1.0);
+    EXPECT_EQ(vec_i.x, 1);
+
+    Vector2i8 vec_i8(1, 2);
+    Vector2u16 vec_u16(1, 2);
+    Vector2i32 vec_i32(1, 2);
+    Vector2u64 vec_u64(1, 2);
+
+    EXPECT_EQ(vec_i8.x, 1);
+    EXPECT_EQ(vec_u16.x, 1);
+    EXPECT_EQ(vec_i32.x, 1);
+    EXPECT_EQ(vec_u64.x, 1);
+}
