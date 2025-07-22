@@ -54,7 +54,7 @@ template <typename T, typename ValueType = void>
 inline constexpr bool is_vector2_like_v = is_vector2_like_impl<T, ValueType>::value;
 
 template <typename T>
-constexpr T fast_inverse_sqrt(T x) noexcept
+constexpr T approximate_inverse_sqrt(T x) noexcept
 {
     if constexpr (std::is_same_v<T, float>)
     {
@@ -864,7 +864,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr precision_type fast_length() const noexcept
+    [[nodiscard]] constexpr precision_type approximate_length() const noexcept
     {
         const auto min_comp = std::min(std::abs(x), std::abs(y));
         const auto max_comp = std::max(std::abs(x), std::abs(y));
@@ -891,9 +891,9 @@ public:
         return a.length();
     }
 
-    static constexpr precision_type fast_length(const Vector2& a) noexcept
+    static constexpr precision_type approximate_length(const Vector2& a) noexcept
     {
-        return a.fast_length();
+        return a.approximate_length();
     }
 
     template <typename OutputVector = Vector2
@@ -928,7 +928,8 @@ public:
 #ifdef MATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
-    static constexpr OutputVector normalize_fast(const Vector2& a, OutputVector* out = nullptr)
+    static constexpr OutputVector normalize_approximate(const Vector2& a,
+                                                        OutputVector* out = nullptr)
     {
         if constexpr (std::is_floating_point_v<T>)
         {
@@ -937,7 +938,7 @@ public:
             {
                 throw std::runtime_error("Cannot normalize zero-length vector");
             }
-            const auto inv_len = detail::fast_inverse_sqrt(len_sq);
+            const auto inv_len = detail::approximate_inverse_sqrt(len_sq);
             const auto result = OutputVector{a.x * inv_len, a.y * inv_len};
             if (out)
                 *out = result;
@@ -968,7 +969,8 @@ public:
         }
     }
 
-    static constexpr precision_type distance_fast(const Vector2& a, const Vector2& b) noexcept
+    static constexpr precision_type distance_approximate(const Vector2& a,
+                                                         const Vector2& b) noexcept
     {
         const auto dx = std::abs(a.x - b.x);
         const auto dy = std::abs(a.y - b.y);
@@ -1004,7 +1006,7 @@ public:
                                     precision_type{1}));
     }
 
-    static constexpr precision_type fast_angle(const Vector2& a, const Vector2& b) noexcept
+    static constexpr precision_type angle_approximate(const Vector2& a, const Vector2& b) noexcept
     {
         const auto dx = b.x - a.x;
         const auto dy = b.y - a.y;
@@ -1066,9 +1068,9 @@ public:
 #ifdef MATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
-    static constexpr OutputVector rotate_fast(const Vector2& v,
-                                              precision_type angle_rad,
-                                              OutputVector* out = nullptr) noexcept
+    static constexpr OutputVector rotate_optimized(const Vector2& v,
+                                                   precision_type angle_rad,
+                                                   OutputVector* out = nullptr) noexcept
     {
         if (std::abs(angle_rad - PI) < epsilon)
         {
@@ -1371,8 +1373,8 @@ public:
 #ifdef MATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
-    static OutputVector random_fast(precision_type scale = precision_type{1},
-                                    OutputVector* out = nullptr)
+    static OutputVector random_quick(precision_type scale = precision_type{1},
+                                     OutputVector* out = nullptr)
     {
         const auto angle = detail::uniform_dist(detail::gen) * TWO_PI;
         const auto result = OutputVector{static_cast<T>(std::cos(angle) * scale),
@@ -1441,7 +1443,7 @@ public:
         return *this;
     }
 
-    constexpr Vector2& normalize_fast()
+    constexpr Vector2& normalize_approximate()
     {
         if constexpr (std::is_floating_point_v<T>)
         {
@@ -1450,7 +1452,7 @@ public:
             {
                 throw std::runtime_error("Cannot normalize zero-length vector");
             }
-            const auto inv_len = detail::fast_inverse_sqrt(len_sq);
+            const auto inv_len = detail::approximate_inverse_sqrt(len_sq);
             x *= inv_len;
             y *= inv_len;
         }
@@ -1499,9 +1501,9 @@ public:
         return distance(*this, other);
     }
 
-    constexpr precision_type distance_fast(const Vector2& other) const noexcept
+    constexpr precision_type distance_approximate(const Vector2& other) const noexcept
     {
-        return distance_fast(*this, other);
+        return distance_approximate(*this, other);
     }
 
     constexpr T manhattan_distance(const Vector2& other) const noexcept
@@ -1521,7 +1523,7 @@ public:
 
     constexpr precision_type angle_to(const Vector2& other) const noexcept
     {
-        return fast_angle(*this, other);
+        return angle_approximate(*this, other);
     }
 
     static constexpr int compare(const Vector2& a,

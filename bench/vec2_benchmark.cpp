@@ -196,7 +196,7 @@ BENCHMARK_F(Vector2Fixture, FastLength)(benchmark::State& state)
 
     for (auto _ : state)
     {
-        float result = vectors[index].fast_length();
+        float result = vectors[index].approximate_length();
         benchmark::DoNotOptimize(result);
         index = (index + 1) % vectors.size();
     }
@@ -226,7 +226,7 @@ BENCHMARK_F(Vector2Fixture, FastNormalization)(benchmark::State& state)
 
     for (auto _ : state)
     {
-        Vector2f result = Vector2f::normalize_fast(vectors[index]);
+        Vector2f result = Vector2f::normalize_approximate(vectors[index]);
         benchmark::DoNotOptimize(result);
         index = (index + 1) % vectors.size();
     }
@@ -322,7 +322,7 @@ BENCHMARK_F(Vector2Fixture, FastDistance)(benchmark::State& state)
     for (auto _ : state)
     {
         float result =
-            Vector2f::distance_fast(vectors[index], vectors[(index + 1) % vectors.size()]);
+            Vector2f::distance_approximate(vectors[index], vectors[(index + 1) % vectors.size()]);
         benchmark::DoNotOptimize(result);
         index = (index + 1) % vectors.size();
     }
@@ -386,7 +386,7 @@ BENCHMARK_F(Vector2Fixture, FastRotation)(benchmark::State& state)
 
     for (auto _ : state)
     {
-        Vector2f result = Vector2f::rotate_fast(vectors[index], angles[index]);
+        Vector2f result = Vector2f::rotate_optimized(vectors[index], angles[index]);
         benchmark::DoNotOptimize(result);
         index = (index + 1) % vectors.size();
     }
@@ -668,7 +668,7 @@ static void RegisterComparativeBenchmarks()
 
                                      for (auto _ : state)
                                      {
-                                         float result = vectors[index].fast_length();
+                                         float result = vectors[index].approximate_length();
                                          benchmark::DoNotOptimize(result);
                                          index = (index + 1) % vectors.size();
                                      }
@@ -700,7 +700,7 @@ static void RegisterComparativeBenchmarks()
 
                                      for (auto _ : state)
                                      {
-                                         Vector2f result = Vector2f::normalize_fast(vectors[index]);
+                                         Vector2f result = Vector2f::normalize_approximate(vectors[index]);
                                          benchmark::DoNotOptimize(result);
                                          index = (index + 1) % vectors.size();
                                      }
@@ -736,7 +736,7 @@ static void RegisterComparativeBenchmarks()
                                      for (auto _ : state)
                                      {
                                          Vector2f result =
-                                             Vector2f::rotate_fast(vectors[index], angles[index]);
+                                             Vector2f::rotate_optimized(vectors[index], angles[index]);
                                          benchmark::DoNotOptimize(result);
                                          index = (index + 1) % vectors.size();
                                      }
@@ -772,7 +772,7 @@ static void RegisterComparativeBenchmarks()
             for (auto _ : state)
             {
                 float result =
-                    Vector2f::distance_fast(vectors[index], vectors[(index + 1) % vectors.size()]);
+                    Vector2f::distance_approximate(vectors[index], vectors[(index + 1) % vectors.size()]);
                 benchmark::DoNotOptimize(result);
                 index = (index + 1) % vectors.size();
             }
