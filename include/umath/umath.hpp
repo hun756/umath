@@ -69,6 +69,22 @@ struct ArchSpecificOps
             return std::sqrt(x);
         }
     }
+
+    [[nodiscard]] static inline T fast_rsqrt(T x) noexcept
+    {
+        if constexpr (std::is_same_v<T, float> && simd::compile_time::has<simd::Feature::SSE>())
+        {
+            float result;
+            __m128 in = _mm_set_ss(x);
+            __m128 out = _mm_rsqrt_ss(in);
+            _mm_store_ss(&result, out);
+            return result;
+        }
+        else
+        {
+            return T(1) / std::sqrt(x);
+        }
+    }
 };
 
 }  // namespace detail
