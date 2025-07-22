@@ -6,6 +6,7 @@
 #include <bit>
 #include <cmath>
 #include <limits>
+#include <numbers>
 #include <stdexcept>
 #include <type_traits>
 
@@ -178,6 +179,30 @@ struct FastOps
 };
 
 }  // namespace detail
+
+template <typename T>
+requires Arithmetic<T>
+class Math final
+{
+private:
+    static constexpr T PI = std::numbers::pi_v<T>;
+    static constexpr T E = std::numbers::e_v<T>;
+
+    using Checker = detail::OverflowChecker<T>;
+    using FastOp = detail::FastOps<T>;
+    using ArchOp = detail::ArchSpecificOps<T>;
+
+public:
+    Math() = delete;
+    ~Math() = delete;
+    Math(const Math&) = delete;
+    Math& operator=(const Math&) = delete;
+    Math(Math&&) = delete;
+    Math& operator=(Math&&) = delete;
+
+    static constexpr T RAD_TO_DEG = T(180) / PI;
+    static constexpr T DEG_TO_RAD = PI / T(180);
+};
 
 }  // namespace umath
 
