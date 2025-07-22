@@ -1,11 +1,8 @@
-#include "umath/vec2.hpp"
-
 #include <benchmark/benchmark.h>
+#include <umath/vec2.hpp>
 
-#include <cmath>
 #include <random>
 #include <vector>
-
 
 using namespace umath;
 
@@ -700,7 +697,8 @@ static void RegisterComparativeBenchmarks()
 
                                      for (auto _ : state)
                                      {
-                                         Vector2f result = Vector2f::normalize_approximate(vectors[index]);
+                                         Vector2f result =
+                                             Vector2f::normalize_approximate(vectors[index]);
                                          benchmark::DoNotOptimize(result);
                                          index = (index + 1) % vectors.size();
                                      }
@@ -725,23 +723,23 @@ static void RegisterComparativeBenchmarks()
                                      state.SetItemsProcessed(state.iterations());
                                  });
 
-    benchmark::RegisterBenchmark("Rotation_Fast",
-                                 [](benchmark::State& state)
-                                 {
-                                     const auto& data = BenchmarkData::GetInstance();
-                                     const auto& vectors = data.GetVectors();
-                                     const auto& angles = data.GetAngles();
-                                     size_t index = 0;
+    benchmark::RegisterBenchmark(
+        "Rotation_Fast",
+        [](benchmark::State& state)
+        {
+            const auto& data = BenchmarkData::GetInstance();
+            const auto& vectors = data.GetVectors();
+            const auto& angles = data.GetAngles();
+            size_t index = 0;
 
-                                     for (auto _ : state)
-                                     {
-                                         Vector2f result =
-                                             Vector2f::rotate_optimized(vectors[index], angles[index]);
-                                         benchmark::DoNotOptimize(result);
-                                         index = (index + 1) % vectors.size();
-                                     }
-                                     state.SetItemsProcessed(state.iterations());
-                                 });
+            for (auto _ : state)
+            {
+                Vector2f result = Vector2f::rotate_optimized(vectors[index], angles[index]);
+                benchmark::DoNotOptimize(result);
+                index = (index + 1) % vectors.size();
+            }
+            state.SetItemsProcessed(state.iterations());
+        });
 
     benchmark::RegisterBenchmark(
         "Distance_Standard",
@@ -761,23 +759,23 @@ static void RegisterComparativeBenchmarks()
             state.SetItemsProcessed(state.iterations());
         });
 
-    benchmark::RegisterBenchmark(
-        "Distance_Fast",
-        [](benchmark::State& state)
-        {
-            const auto& data = BenchmarkData::GetInstance();
-            const auto& vectors = data.GetVectors();
-            size_t index = 0;
+    benchmark::RegisterBenchmark("Distance_Fast",
+                                 [](benchmark::State& state)
+                                 {
+                                     const auto& data = BenchmarkData::GetInstance();
+                                     const auto& vectors = data.GetVectors();
+                                     size_t index = 0;
 
-            for (auto _ : state)
-            {
-                float result =
-                    Vector2f::distance_approximate(vectors[index], vectors[(index + 1) % vectors.size()]);
-                benchmark::DoNotOptimize(result);
-                index = (index + 1) % vectors.size();
-            }
-            state.SetItemsProcessed(state.iterations());
-        });
+                                     for (auto _ : state)
+                                     {
+                                         float result = Vector2f::distance_approximate(
+                                             vectors[index],
+                                             vectors[(index + 1) % vectors.size()]);
+                                         benchmark::DoNotOptimize(result);
+                                         index = (index + 1) % vectors.size();
+                                     }
+                                     state.SetItemsProcessed(state.iterations());
+                                 });
 }
 
 static void BM_ComponentAccess(benchmark::State& state)
