@@ -87,6 +87,9 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/generated      # Generated headers
 )
 
+# Add simd_feature_check as a subdirectory
+add_subdirectory(external/simd_feature_check)
+
 # Find all source files for the library, excluding main.cpp
 file(GLOB_RECURSE LIB_SOURCES "src/*.cpp")
 list(FILTER LIB_SOURCES EXCLUDE REGEX ".*main\\.cpp$")
@@ -128,11 +131,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>       # When building
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>     # When building
     $<INSTALL_INTERFACE:include>                                 # When installing
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/simd_feature_check/include> # simd_feature_check headers
 )
 
 # Create the main executable
 add_executable(${PROJECT_NAME}_exe src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_exe PRIVATE ${PROJECT_NAME})
+
+# Link simd_feature_check to the main library
+target_link_libraries(${PROJECT_NAME} PUBLIC simd_feature_check)
 set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 # Build examples if enabled
@@ -150,6 +157,7 @@ endif()
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     add_subdirectory(docs)
+    # Artık 'docs' yerine 'umath_docs' hedefi var
 endif()
 
 # Build benchmarks if enabled

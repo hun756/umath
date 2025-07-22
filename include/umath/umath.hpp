@@ -1,6 +1,9 @@
 #ifndef LIB_UMATH_HPP_p7q7hl
 #define LIB_UMATH_HPP_p7q7hl
 
+#include <simd/feature_check.hpp>
+
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
@@ -37,7 +40,38 @@ struct FloatTraits
     static constexpr int min_exponent = std::numeric_limits<T>::min_exponent;
 };
 
-// Todo!: continue with our simd library
+namespace detail
+{
+template <typename T>
+struct ArchSpecificOps
+{
+    [[nodiscard]] static inline T fast_sqrt(T x) noexcept
+    {
+        if constexpr (std::is_same_v<T, float> && simd::compile_time::has<simd::Feature::SSE>())
+        {
+            float result;
+            __m128 in = _mm_set_ss(x);
+            __m128 out = _mm_sqrt_ss(in);
+            _mm_store_ss(&result, out);
+            return result;
+        }
+        else if constexpr (std::is_same_v<T, double>
+                           && simd::compile_time::has<simd::Feature::SSE2>())
+        {
+            double result;
+            __m128d in = _mm_set_sd(x);
+            __m128d out = _mm_sqrt_sd(in, in);
+            _mm_store_sd(&result, out);
+            return result;
+        }
+        else
+        {
+            return std::sqrt(x);
+        }
+    }
+};
+
+}  // namespace detail
 
 }  // namespace umath
 
