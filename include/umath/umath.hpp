@@ -338,6 +338,51 @@ public:
         }
         return std::round(x);
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U cbrt(U x) noexcept
+    {
+        if (x == U(0) || std::isnan(x) || std::isinf(x))
+        {
+            return x;
+        }
+
+        U y;
+        if constexpr (std::is_same_v<U, float>)
+        {
+            std::int32_t ix;
+            std::memcpy(&ix, &x, sizeof(float));
+            ix = ix / 3 + 709'921'077;
+            std::memcpy(&y, &ix, sizeof(float));
+        }
+        else
+        {
+            int exp;
+            U mant = std::frexp(std::abs(x), &exp);
+            y = std::ldexp(std::pow(U(2), U(exp % 3)) * std::pow(mant, U(1) / U(3)), exp / 3);
+        }
+
+        if constexpr (simd::compile_time::has<simd::Feature::FMA>())
+        {
+            for (int i = 0; i < (std::is_same_v<U, float> ? 2 : 3); ++i)
+            {
+                U y2 = y * y;
+                U y3 = y * y2;
+                y = std::fma(y, U(2), x / y2) * U(1) / U(3);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < (std::is_same_v<U, float> ? 2 : 3); ++i)
+            {
+                U y2 = y * y;
+                y = (U(2) * y + x / y2) * U(1) / U(3);
+            }
+        }
+
+        return std::signbit(x) ? -y : y;
+    }
 };
 
 }  // namespace umath
