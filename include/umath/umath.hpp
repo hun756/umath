@@ -3,6 +3,7 @@
 
 #include <simd/feature_check.hpp>
 
+#include <bit>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -137,6 +138,42 @@ struct OverflowChecker
             return x != -1 && y < std::numeric_limits<T>::max() / x;
         }
         return false;
+    }
+};
+
+template <typename T>
+struct FastOps
+{
+    [[nodiscard]] static constexpr T abs(T x) noexcept
+    {
+        if constexpr (std::is_unsigned_v<T>)
+        {
+            return x;
+        }
+        else
+        {
+            const T mask = x >> (std::numeric_limits<T>::digits - 1);
+            return (x + mask) ^ mask;
+        }
+    }
+
+    [[nodiscard]] static constexpr T signum(T x) noexcept
+    {
+        return (T(0) < x) - (x < T(0));
+    }
+
+    template <typename U = T>
+    [[nodiscard]] static constexpr std::enable_if_t<std::is_integral_v<U>, U> fast_mod(U x,
+                                                                                       U y) noexcept
+    {
+        if constexpr (std::has_single_bit(y))
+        {
+            return x & (y - 1);
+        }
+        else
+        {
+            return x % y;
+        }
     }
 };
 
