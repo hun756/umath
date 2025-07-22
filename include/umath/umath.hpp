@@ -202,6 +202,33 @@ public:
 
     static constexpr T RAD_TO_DEG = T(180) / PI;
     static constexpr T DEG_TO_RAD = PI / T(180);
+
+    [[nodiscard]] static constexpr T addExact(T x, T y)
+    {
+        if (Checker::will_add_overflow(x, y))
+        {
+            throw arithmetic_overflow("Addition overflow");
+        }
+        return x + y;
+    }
+
+    [[nodiscard]] static constexpr T subtractExact(T x, T y)
+    {
+        if (Checker::will_subtract_overflow(x, y))
+        {
+            throw arithmetic_overflow("Subtraction overflow");
+        }
+        return x - y;
+    }
+
+    [[nodiscard]] static constexpr T multiplyExact(T x, T y)
+    {
+        if (Checker::will_multiply_overflow(x, y))
+        {
+            throw arithmetic_overflow("Multiplication overflow");
+        }
+        return x * y;
+    }
 };
 
 }  // namespace umath
