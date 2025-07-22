@@ -87,6 +87,59 @@ struct ArchSpecificOps
     }
 };
 
+template <typename T>
+struct OverflowChecker
+{
+    [[nodiscard]] static constexpr bool will_add_overflow(T x, T y) noexcept
+    {
+        if constexpr (std::is_integral_v<T>)
+        {
+            if (y > 0)
+            {
+                return x > std::numeric_limits<T>::max() - y;
+            }
+            return x < std::numeric_limits<T>::min() - y;
+        }
+        return false;
+    }
+
+    [[nodiscard]] static constexpr bool will_subtract_overflow(T x, T y) noexcept
+    {
+        if constexpr (std::is_integral_v<T>)
+        {
+            if (y > 0)
+            {
+                return x < std::numeric_limits<T>::min() + y;
+            }
+            return x > std::numeric_limits<T>::max() + y;
+        }
+        return false;
+    }
+
+    [[nodiscard]] static constexpr bool will_multiply_overflow(T x, T y) noexcept
+    {
+        if constexpr (std::is_integral_v<T>)
+        {
+            if (x == 0 || y == 0)
+                return false;
+            if (x > 0)
+            {
+                if (y > 0)
+                {
+                    return x > std::numeric_limits<T>::max() / y;
+                }
+                return y < std::numeric_limits<T>::min() / x;
+            }
+            if (y > 0)
+            {
+                return x < std::numeric_limits<T>::min() / y;
+            }
+            return x != -1 && y < std::numeric_limits<T>::max() / x;
+        }
+        return false;
+    }
+};
+
 }  // namespace detail
 
 }  // namespace umath
