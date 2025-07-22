@@ -266,6 +266,78 @@ public:
         }
         return std::sin(x);
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U ceil(U x) noexcept
+    {
+        if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::SSE41>)
+        {
+            float result;
+            __m128 in = _mm_set_ss(x);
+            __m128 rounded = _mm_ceil_ss(in, in);
+            _mm_store_ss(&result, rounded);
+            return result;
+        }
+        else if constexpr (std::is_same_v<U, double>
+                           && simd::compile_time::has<simd::Feature::SSE41>)
+        {
+            double result;
+            __m128d in = _mm_set_sd(x);
+            __m128d rounded = _mm_ceil_sd(in, in);
+            _mm_store_sd(&result, rounded);
+            return result;
+        }
+        return std::ceil(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U floor(U x) noexcept
+    {
+        if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::SSE41>)
+        {
+            float result;
+            __m128 in = _mm_set_ss(x);
+            __m128 rounded = _mm_floor_ss(in, in);
+            _mm_store_ss(&result, rounded);
+            return result;
+        }
+        else if constexpr (std::is_same_v<U, double>
+                           && simd::compile_time::has<simd::Feature::SSE41>)
+        {
+            double result;
+            __m128d in = _mm_set_sd(x);
+            __m128d rounded = _mm_floor_sd(in, in);
+            _mm_store_sd(&result, rounded);
+            return result;
+        }
+        return std::floor(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U round(U x) noexcept
+    {
+        if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::SSE41>)
+        {
+            float result;
+            __m128 in = _mm_set_ss(x);
+            __m128 rounded = _mm_round_ss(in, in, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+            _mm_store_ss(&result, rounded);
+            return result;
+        }
+        else if constexpr (std::is_same_v<U, double>
+                           && simd::compile_time::has<simd::Feature::SSE41>)
+        {
+            double result;
+            __m128d in = _mm_set_sd(x);
+            __m128d rounded = _mm_round_sd(in, in, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+            _mm_store_sd(&result, rounded);
+            return result;
+        }
+        return std::round(x);
+    }
 };
 
 }  // namespace umath
