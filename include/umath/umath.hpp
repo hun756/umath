@@ -229,6 +229,43 @@ public:
         }
         return x * y;
     }
+
+    [[nodiscard]] static constexpr T abs(T x) noexcept
+    {
+        return FastOp::abs(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U cos(U x) noexcept
+    {
+        if constexpr (simd::compile_time::has<simd::Feature::AVX>())
+        {
+            if (Math::abs(x) < U(0.01))
+            {
+                U x2 = x * x;
+                return U(1) - x2 * (U(0.5) - x2 * (U(1) / U(24)));
+            }
+        }
+        return std::cos(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U sin(U x) noexcept
+    {
+        if constexpr (simd::compile_time::has<simd::Feature::AVX>())
+        {
+            if (Math::abs(x) < U(0.01))
+            {
+                U x2 = x * x;
+                U x3 = x2 * x;
+                U x5 = x3 * x2;
+                return x - x3 / U(6) + x5 / U(120);
+            }
+        }
+        return std::sin(x);
+    }
 };
 
 }  // namespace umath
