@@ -383,6 +383,35 @@ public:
 
         return std::signbit(x) ? -y : y;
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U hypot(U x, U y) noexcept
+    {
+        if (std::isnan(x) || std::isnan(y))
+            return std::numeric_limits<U>::quiet_NaN();
+        if (std::isinf(x) || std::isinf(y))
+            return std::numeric_limits<U>::infinity();
+
+        x = std::abs(x);
+        y = std::abs(y);
+
+        if (x > y)
+            std::swap(x, y);
+        if (y == U(0))
+            return U(0);
+
+        const U ratio = x / y;
+
+        if constexpr (simd::compile_time::has<simd::Feature::FMA>())
+        {
+            return y * std::sqrt(std::fma(ratio, ratio, U(1)));
+        }
+        else
+        {
+            return y * std::sqrt(U(1) + ratio * ratio);
+        }
+    }
 };
 
 }  // namespace umath
