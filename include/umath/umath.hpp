@@ -473,6 +473,35 @@ public:
             return (mantissa * sum + static_cast<U>(exp)) * LOG10_2;
         }
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U tan(U x) noexcept
+    {
+        if constexpr (simd::compile_time::has<simd::Feature::AVX>())
+        {
+            if (std::abs(x) < U(0.01))
+            {
+                U x2 = x * x;
+                return x * (U(1) + x2 * (U(1) / U(3) + x2 * (U(2) / U(15))));
+            }
+        }
+        return std::tan(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U sqrt(U x) noexcept
+    {
+        return ArchOp::fast_sqrt(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U rsqrt(U x) noexcept
+    {
+        return ArchOp::fast_rsqrt(x);
+    }
 };
 
 }  // namespace umath
