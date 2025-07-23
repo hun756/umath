@@ -502,6 +502,53 @@ public:
     {
         return ArchOp::fast_rsqrt(x);
     }
+
+    [[nodiscard]] static constexpr T max(T a, T b) noexcept
+    {
+        if constexpr (std::is_same_v<T, float> && simd::compile_time::has<simd::Feature::SSE>())
+        {
+            float result;
+            __m128 va = _mm_set_ss(a);
+            __m128 vb = _mm_set_ss(b);
+            __m128 vr = _mm_max_ss(va, vb);
+            _mm_store_ss(&result, vr);
+            return result;
+        }
+        else if constexpr (std::is_same_v<T, double> && simd::compile_time::has<simd::Feature::SSE2>())
+        {
+            double result;
+            __m128d va = _mm_set_sd(a);
+            __m128d vb = _mm_set_sd(b);
+            __m128d vr = _mm_max_sd(va, vb);
+            _mm_store_sd(&result, vr);
+            return result;
+        }
+        return (a > b) ? a : b;
+    }
+
+    [[nodiscard]] static constexpr T min(T a, T b) noexcept
+    {
+        if constexpr (std::is_same_v<T, float> && simd::compile_time::has<simd::Feature::SSE>())
+        {
+            float result;
+            __m128 va = _mm_set_ss(a);
+            __m128 vb = _mm_set_ss(b);
+            __m128 vr = _mm_min_ss(va, vb);
+            _mm_store_ss(&result, vr);
+            return result;
+        }
+        else if constexpr (std::is_same_v<T, double>
+                           && simd::compile_time::has<simd::Feature::SSE2>())
+        {
+            double result;
+            __m128d va = _mm_set_sd(a);
+            __m128d vb = _mm_set_sd(b);
+            __m128d vr = _mm_min_sd(va, vb);
+            _mm_store_sd(&result, vr);
+            return result;
+        }
+        return (a < b) ? a : b;
+    }
 };
 
 }  // namespace umath
