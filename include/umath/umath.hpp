@@ -412,6 +412,67 @@ public:
             return y * std::sqrt(U(1) + ratio * ratio);
         }
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U log10(U x) noexcept
+    {
+        if (std::isnan(x) || x < U(0))
+            return std::numeric_limits<U>::quiet_NaN();
+        if (x == U(0))
+            return -std::numeric_limits<U>::infinity();
+        if (x == std::numeric_limits<U>::infinity())
+            return std::numeric_limits<U>::infinity();
+        if (x == U(1))
+            return U(0);
+
+        static constexpr U LOG10_2 = U(0.301029995663981195213738894724);
+
+        int exp;
+        U mantissa = std::frexp(x, &exp);
+
+        if (mantissa < U(0.707106781186547524))
+        {
+            mantissa *= U(2);
+            exp--;
+        }
+
+        mantissa -= U(1);
+
+        if constexpr (simd::compile_time::has<simd::Feature::FMA>())
+        {
+            static constexpr std::array<U, 7> C = {U(1.44269504088896340735992468100),
+                                                   U(-0.721347520444482321375724860100),
+                                                   U(0.479562288154233437462321694088),
+                                                   U(-0.343919840191426222699399068339),
+                                                   U(0.262203599088046952191325362389),
+                                                   U(-0.206803849532505428332945754492),
+                                                   U(0.168498995576053976569765001550)};
+
+            U sum = C[6];
+            for (int i = 5; i >= 0; --i)
+            {
+                sum = std::fma(sum, mantissa, C[i]);
+            }
+            return sum * mantissa * LOG10_2 + static_cast<U>(exp) * LOG10_2;
+        }
+        else
+        {
+            static constexpr std::array<U, 6> C = {U(2.885390081777926774316924906839),
+                                                   U(-0.961796693925975860332579281749),
+                                                   U(0.577078017761894161436831772056),
+                                                   U(-0.412116952651449828911216326591),
+                                                   U(0.308539341038336403451042436809),
+                                                   U(-0.237806477670409415221410025403)};
+
+            U sum = C[5];
+            for (int i = 4; i >= 0; --i)
+            {
+                sum = sum * mantissa + C[i];
+            }
+            return (mantissa * sum + static_cast<U>(exp)) * LOG10_2;
+        }
+    }
 };
 
 }  // namespace umath
