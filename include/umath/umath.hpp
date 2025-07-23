@@ -12,6 +12,7 @@
 
 namespace umath
 {
+
 class arithmetic_overflow final : public std::runtime_error
 {
 public:
@@ -514,7 +515,8 @@ public:
             _mm_store_ss(&result, vr);
             return result;
         }
-        else if constexpr (std::is_same_v<T, double> && simd::compile_time::has<simd::Feature::SSE2>())
+        else if constexpr (std::is_same_v<T, double>
+                           && simd::compile_time::has<simd::Feature::SSE2>())
         {
             double result;
             __m128d va = _mm_set_sd(a);
@@ -548,6 +550,75 @@ public:
             return result;
         }
         return (a < b) ? a : b;
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U exp(U x) noexcept
+    {
+        if constexpr (simd::compile_time::has<simd::Feature::AVX>())
+        {
+            if (std::abs(x) < U(0.01))
+            {
+                U sum = U(1) + x;
+                U term = x;
+                for (int i = 2; i < 6; ++i)
+                {
+                    term *= x / i;
+                    sum += term;
+                }
+                return sum;
+            }
+        }
+        return std::exp(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static constexpr U toRadians(U degrees) noexcept
+    {
+        return degrees * DEG_TO_RAD;
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static constexpr U toDegrees(U radians) noexcept
+    {
+        return radians * RAD_TO_DEG;
+    }
+
+    [[nodiscard]] static constexpr T signum(T x) noexcept
+    {
+        return FastOp::signum(x);
+    }
+
+    template <typename U = T>
+    requires Integral<U>
+    [[nodiscard]] static constexpr U floorDiv(U x, U y)
+    {
+        if (y == 0)
+        {
+            throw std::domain_error("Division by zero in floorDiv");
+        }
+        U q = x / y;
+        U r = x % y;
+        if ((r != 0) && ((r < 0) != (y < 0)))
+            --q;
+        return q;
+    }
+
+    template <typename U = T>
+    requires Integral<U>
+    [[nodiscard]] static constexpr U floorMod(U x, U y)
+    {
+        if (y == 0)
+        {
+            throw std::domain_error("Division by zero in floorMod");
+        }
+        U r = x % y;
+        if ((r != 0) && ((r < 0) != (y < 0)))
+            r += y;
+        return r;
     }
 };
 
