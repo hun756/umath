@@ -11,6 +11,11 @@
 #include <type_traits>
 #include <utility>
 
+#if __cplusplus >= 202'002L
+    #include <concepts>
+    #define MATH_CONCEPTS_ENABLED
+#endif
+
 namespace umath
 {
 namespace detail
@@ -131,15 +136,14 @@ enum class ComparisonMode
     MANHATTAN
 };
 
-template <typename T
 #ifdef MATH_CONCEPTS_ENABLED
-          >
+template <typename T>
 requires Arithmetic<T>
-#else
-          ,
-          typename = std::enable_if_t<detail::numeric_traits<T>::is_valid>>
-#endif
 class alignas(sizeof(T) * 2) Vector2
+#else
+template <typename T, typename = std::enable_if_t<detail::numeric_traits<T>::is_valid>>
+class alignas(sizeof(T) * 2) Vector2
+#endif
 {
 public:
     using value_type = T;
@@ -162,33 +166,30 @@ public:
     explicit constexpr Vector2(T value) noexcept : x{value}, y{value} {}
     constexpr Vector2(T x_val, T y_val) noexcept : x{x_val}, y{y_val} {}
 
-    template <typename U
 #ifdef MATH_CONCEPTS_ENABLED
-              >
-    requires Arithmetic<U>
-                 && std::convertible_to<U, T>
+    template <typename U>
+    requires Arithmetic<U> && std::convertible_to<U, T>
+    explicit constexpr Vector2(const Vector2<U>& other) noexcept
 #else
-              ,
+    template <typename U,
               typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
-                                          && std::is_convertible_v<U, T>>
+                                          && std::is_convertible_v<U, T>>>
+    explicit constexpr Vector2(const Vector2<U>& other) noexcept
 #endif
-                        >
-             explicit constexpr Vector2(const Vector2<U>& other) noexcept
-        : x{static_cast<T>(other.x)},
-    y{static_cast<T>(other.y)}
+        : x{static_cast<T>(other.x)}, y{static_cast<T>(other.y)}
     {
     }
 
-    template <typename ValueType = T
 #ifdef MATH_CONCEPTS_ENABLED
-              >
+    template <typename ValueType = T>
     requires Arithmetic<ValueType> && std::convertible_to<ValueType, T>
+    class ImmutableVector2
 #else
-              ,
+    template <typename ValueType = T,
               typename = std::enable_if_t<detail::numeric_traits<ValueType>::is_valid
                                           && std::is_convertible_v<ValueType, T>>>
-#endif
     class ImmutableVector2
+#endif
     {
     private:
         const ValueType x_, y_;
@@ -197,53 +198,49 @@ public:
         using value_type = ValueType;
         using const_reference = const ValueType&;
 
-        template <typename X,
-                  typename Y
-#ifndef MATH_CONCEPTS_ENABLED
-                  ,
-                  typename = std::enable_if_t<
-                      detail::numeric_traits<X>::is_valid && detail::numeric_traits<Y>::is_valid
-                      && std::is_convertible_v<X, ValueType> && std::is_convertible_v<Y, ValueType>>
-#endif
-                  >
 #ifdef MATH_CONCEPTS_ENABLED
+        template <typename X, typename Y>
         requires Arithmetic<X> && Arithmetic<Y> && std::convertible_to<X, ValueType>
                      && std::convertible_to<Y, ValueType>
-#endif
         constexpr ImmutableVector2(X&& x_val, Y&& y_val) noexcept
+#else
+        template <
+            typename X,
+            typename Y,
+            typename = std::enable_if_t<
+                detail::numeric_traits<X>::is_valid && detail::numeric_traits<Y>::is_valid
+                && std::is_convertible_v<X, ValueType> && std::is_convertible_v<Y, ValueType>>>
+        constexpr ImmutableVector2(X&& x_val, Y&& y_val) noexcept
+#endif
             : x_{static_cast<ValueType>(std::forward<X>(x_val))},
               y_{static_cast<ValueType>(std::forward<Y>(y_val))}
         {
         }
 
-        template <typename U
 #ifdef MATH_CONCEPTS_ENABLED
-                  >
-        requires Arithmetic<U>
-                     && std::convertible_to<U, ValueType>
+        template <typename U>
+        requires Arithmetic<U> && std::convertible_to<U, ValueType>
+        constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
 #else
-                  ,
+        template <typename U,
                   typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
-                                              && std::is_convertible_v<U, ValueType>>
+                                              && std::is_convertible_v<U, ValueType>>>
+        constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
 #endif
-                            >
-                 constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
-            : x_{static_cast<ValueType>(other.x)},
-        y_{static_cast<ValueType>(other.y)}
+            : x_{static_cast<ValueType>(other.x)}, y_{static_cast<ValueType>(other.y)}
         {
         }
 
-        template <typename U
-#ifndef MATH_CONCEPTS_ENABLED
-                  ,
-                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
-                                              && std::is_convertible_v<U, ValueType>>
-#endif
-                  >
 #ifdef MATH_CONCEPTS_ENABLED
+        template <typename U>
         requires Arithmetic<U> && std::convertible_to<U, ValueType>
-#endif
         constexpr explicit ImmutableVector2(const ImmutableVector2<U>& other) noexcept
+#else
+        template <typename U,
+                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                                              && std::is_convertible_v<U, ValueType>>>
+        constexpr explicit ImmutableVector2(const ImmutableVector2<U>& other) noexcept
+#endif
             : x_{static_cast<ValueType>(other.x())}, y_{static_cast<ValueType>(other.y())}
         {
         }
@@ -257,31 +254,28 @@ public:
             return y_;
         }
 
-        template <typename U = T
-#ifndef MATH_CONCEPTS_ENABLED
-                  ,
-                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
-                                              && std::is_convertible_v<ValueType, U>>
-#endif
-                  >
 #ifdef MATH_CONCEPTS_ENABLED
+        template <typename U = T>
         requires Arithmetic<U> && std::convertible_to<ValueType, U>
-#endif
         [[nodiscard]] constexpr operator Vector2<U>() const noexcept
+#else
+        template <typename U = T,
+                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                                              && std::is_convertible_v<ValueType, U>>>
+        [[nodiscard]] constexpr operator Vector2<U>() const noexcept
+#endif
         {
             return {static_cast<U>(x_), static_cast<U>(y_)};
         }
 
-        template <typename U
-#ifndef MATH_CONCEPTS_ENABLED
-                  ,
-                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid>
-#endif
-                  >
 #ifdef MATH_CONCEPTS_ENABLED
+        template <typename U>
         requires Arithmetic<U>
-#endif
         [[nodiscard]] constexpr auto as() const noexcept -> ImmutableVector2<U>
+#else
+        template <typename U, typename = std::enable_if_t<detail::numeric_traits<U>::is_valid>>
+        [[nodiscard]] constexpr auto as() const noexcept -> ImmutableVector2<U>
+#endif
         {
             return ImmutableVector2<U>{static_cast<U>(x_), static_cast<U>(y_)};
         }
@@ -489,16 +483,14 @@ public:
         }
     }
 
-    template <typename U = T
-#ifndef MATH_CONCEPTS_ENABLED
-              ,
-              typename = std::enable_if_t<std::is_floating_point_v<U>>
-#endif
-              >
 #ifdef MATH_CONCEPTS_ENABLED
+    template <typename U = T>
     requires FloatingPoint<U>
-#endif
     [[nodiscard]] static constexpr auto infinity_immutable() noexcept -> const ImmutableVector2<U>&
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static constexpr auto infinity_immutable() noexcept -> const ImmutableVector2<U>&
+#endif
     {
         static const ImmutableVector2<U> infinity_typed{std::numeric_limits<U>::infinity(),
                                                         std::numeric_limits<U>::infinity()};
@@ -593,18 +585,19 @@ public:
         return *this;
     }
 
-    template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
-              ,
-              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
-#endif
-              >
 #ifdef MATH_CONCEPTS_ENABLED
+    template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
-#endif
     static constexpr OutputVector add(const Vector2& a,
                                       const Vector2& b,
                                       OutputVector* out = nullptr) noexcept
+#else
+    template <typename OutputVector = Vector2,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>>
+    static constexpr OutputVector add(const Vector2& a,
+                                      const Vector2& b,
+                                      OutputVector* out = nullptr) noexcept
+#endif
     {
         const auto result = OutputVector{a.x + b.x, a.y + b.y};
         if (out)
@@ -612,18 +605,19 @@ public:
         return result;
     }
 
-    template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
-              ,
-              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
-#endif
-              >
 #ifdef MATH_CONCEPTS_ENABLED
+    template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
-#endif
     static constexpr OutputVector add_scalar(const Vector2& a,
                                              T scalar,
                                              OutputVector* out = nullptr) noexcept
+#else
+    template <typename OutputVector = Vector2,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>>
+    static constexpr OutputVector add_scalar(const Vector2& a,
+                                             T scalar,
+                                             OutputVector* out = nullptr) noexcept
+#endif
     {
         const auto result = OutputVector{a.x + scalar, a.y + scalar};
         if (out)
@@ -631,18 +625,19 @@ public:
         return result;
     }
 
-    template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
-              ,
-              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
-#endif
-              >
 #ifdef MATH_CONCEPTS_ENABLED
+    template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
-#endif
     static constexpr OutputVector subtract(const Vector2& a,
                                            const Vector2& b,
                                            OutputVector* out = nullptr) noexcept
+#else
+    template <typename OutputVector = Vector2,
+              std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr>
+    static constexpr OutputVector subtract(const Vector2& a,
+                                           const Vector2& b,
+                                           OutputVector* out = nullptr) noexcept
+#endif
     {
         const auto result = OutputVector{a.x - b.x, a.y - b.y};
         if (out)
@@ -1384,16 +1379,15 @@ public:
         return result;
     }
 
-    template <typename OutputVector = Vector2
 #ifdef MATH_CONCEPTS_ENABLED
-              >
+    template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
-#else
-              ,
-              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
-#endif
-             >
     static OutputVector random_box(T min_x, T max_x, T min_y, T max_y, OutputVector* out = nullptr)
+#else
+    template <typename OutputVector = Vector2,
+              typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>>
+    static OutputVector random_box(T min_x, T max_x, T min_y, T max_y, OutputVector* out = nullptr)
+#endif
     {
         std::uniform_real_distribution<precision_type> dist_x{static_cast<precision_type>(min_x),
                                                               static_cast<precision_type>(max_x)};
