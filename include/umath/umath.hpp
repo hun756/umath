@@ -870,8 +870,37 @@ public:
                 return -PI / U(2);
             }
         }
-        
+
         return std::atan2(y, x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U asin(U x) noexcept
+    {
+        if (std::abs(x) < U(0.01))
+        {
+            U x2 = x * x;
+            return x * (U(1) + x2 * (U(1) / U(6) + x2 * (U(3) / U(40))));
+        }
+        return std::asin(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U acos(U x) noexcept
+    {
+        if (x > U(0.999))
+        {
+            U delta = U(1) - x;
+            return std::sqrt(U(2) * delta);
+        }
+        if (x < U(-0.999))
+        {
+            U delta = U(-1) - x;
+            return PI - std::sqrt(U(-2) * delta);
+        }
+        return std::acos(x);
     }
 };
 
