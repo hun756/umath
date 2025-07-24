@@ -902,7 +902,71 @@ public:
         }
         return std::acos(x);
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U ulp(U d) noexcept
+    {
+        if (std::isnan(d) || std::isinf(d))
+            return d;
+        if (d == U(0))
+            return std::numeric_limits<U>::denorm_min();
+
+        U nextVal = std::nextafter(d, std::numeric_limits<U>::infinity());
+        return std::abs(nextVal - d);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    static void vector_add(const U* a, const U* b, U* result, std::size_t size) noexcept
+    {
+        if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::AVX>())
+        {
+            for (std::size_t i = 0; i < size; i += 8)
+            {
+                __m256 va = _mm256_loadu_ps(a + i);
+                __m256 vb = _mm256_loadu_ps(b + i);
+                __m256 vr = _mm256_add_ps(va, vb);
+                _mm256_storeu_ps(result + i, vr);
+            }
+        }
+        else
+        {
+            for (std::size_t i = 0; i < size; ++i)
+            {
+                result[i] = a[i] + b[i];
+            }
+        }
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    static void vector_multiply(const U* a, const U* b, U* result, std::size_t size) noexcept
+    {
+        if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::AVX>())
+        {
+            for (std::size_t i = 0; i < size; i += 8)
+            {
+                __m256 va = _mm256_loadu_ps(a + i);
+                __m256 vb = _mm256_loadu_ps(b + i);
+                __m256 vr = _mm256_mul_ps(va, vb);
+                _mm256_storeu_ps(result + i, vr);
+            }
+        }
+        else
+        {
+            for (std::size_t i = 0; i < size; ++i)
+            {
+                result[i] = a[i] * b[i];
+            }
+        }
+    }
 };
+
+using Mathf = Math<float>;
+using Mathd = Math<double>;
+using Mathi = Math<int>;
+using Mathl = Math<long>;
 
 }  // namespace umath
 
