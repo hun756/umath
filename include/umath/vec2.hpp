@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <utility>
 
-#if __cplusplus >= 202'002L
+#if __cplusplus >= 202002L
     #include <concepts>
     #define MATH_CONCEPTS_ENABLED
 #endif
