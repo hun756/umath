@@ -854,6 +854,25 @@ public:
 
         return negate ? -result : result;
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U atan2(U y, U x) noexcept
+    {
+        if (x == U(0))
+        {
+            if (y > U(0))
+            {
+                return PI / U(2);
+            }
+            if (y < U(0))
+            {
+                return -PI / U(2);
+            }
+        }
+        
+        return std::atan2(y, x);
+    }
 };
 
 }  // namespace umath
