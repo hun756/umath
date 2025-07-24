@@ -3,12 +3,16 @@
 
 #include <simd/feature_check.hpp>
 
-#include <bit>
 #include <cmath>
 #include <limits>
-#include <numbers>
 #include <stdexcept>
 #include <type_traits>
+
+#if __cplusplus >= 202'002L
+    #include <bit>
+    #include <numbers>
+#endif
+
 
 namespace umath
 {
@@ -19,6 +23,12 @@ public:
     explicit arithmetic_overflow(const char* message) noexcept : std::runtime_error(message) {}
 };
 
+
+#if __cplusplus >= 202'002L
+    #define UMATH_CONCEPTS_ENABLED
+#endif
+
+#ifdef UMATH_CONCEPTS_ENABLED
 template <typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
@@ -30,6 +40,19 @@ concept Integral = std::is_integral_v<T>;
 
 template <typename T>
 concept SignedIntegral = Integral<T> && std::is_signed_v<T>;
+#else
+template <typename T>
+using Arithmetic = std::enable_if_t<std::is_arithmetic_v<T>, bool>;
+
+template <typename T>
+using FloatingPoint = std::enable_if_t<std::is_floating_point_v<T>, bool>;
+
+template <typename T>
+using Integral = std::enable_if_t<std::is_integral_v<T>, bool>;
+
+template <typename T>
+using SignedIntegral = std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>, bool>;
+#endif
 
 template <typename T>
 struct FloatTraits
@@ -168,6 +191,7 @@ struct FastOps
     [[nodiscard]] static constexpr std::enable_if_t<std::is_integral_v<U>, U> fast_mod(U x,
                                                                                        U y) noexcept
     {
+#if __cplusplus >= 202'002L
         if constexpr (std::has_single_bit(y))
         {
             return x & (y - 1);
@@ -176,18 +200,38 @@ struct FastOps
         {
             return x % y;
         }
+#else
+        if ((y & (y - 1)) == 0 && y != 0)
+        {
+            return x & (y - 1);
+        }
+        else
+        {
+            return x % y;
+        }
+#endif
     }
 };
 
 }  // namespace detail
 
+#ifdef UMATH_CONCEPTS_ENABLED
 template <typename T>
 requires Arithmetic<T>
 class Math final
+#else
+template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+class Math final
+#endif
 {
 private:
+#if __cplusplus >= 202'002L
     static constexpr T PI = std::numbers::pi_v<T>;
     static constexpr T E = std::numbers::e_v<T>;
+#else
+    static constexpr T PI = T(3.14159265358979323846264338327950288);
+    static constexpr T E = T(2.71828182845904523536028747135266250);
+#endif
 
     using Checker = detail::OverflowChecker<T>;
     using FastOp = detail::FastOps<T>;
@@ -275,9 +319,14 @@ public:
         return FastOp::abs(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U cos(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U cos(U x) noexcept
+#endif
     {
         if constexpr (simd::compile_time::has<simd::Feature::AVX>())
         {
@@ -290,9 +339,14 @@ public:
         return std::cos(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U sin(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U sin(U x) noexcept
+#endif
     {
         if constexpr (simd::compile_time::has<simd::Feature::AVX>())
         {
@@ -307,9 +361,14 @@ public:
         return std::sin(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U ceil(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U ceil(U x) noexcept
+#endif
     {
         if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::SSE41>)
         {
@@ -331,9 +390,14 @@ public:
         return std::ceil(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U floor(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U floor(U x) noexcept
+#endif
     {
         if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::SSE41>)
         {
@@ -355,9 +419,14 @@ public:
         return std::floor(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U round(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U round(U x) noexcept
+#endif
     {
         if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::SSE41>)
         {
@@ -379,9 +448,14 @@ public:
         return std::round(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U cbrt(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U cbrt(U x) noexcept
+#endif
     {
         if (x == U(0) || std::isnan(x) || std::isinf(x))
         {
@@ -424,9 +498,14 @@ public:
         return std::signbit(x) ? -y : y;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U hypot(U x, U y) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U hypot(U x, U y) noexcept
+#endif
     {
         if (std::isnan(x) || std::isnan(y))
             return std::numeric_limits<U>::quiet_NaN();
@@ -453,9 +532,14 @@ public:
         }
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U log10(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U log10(U x) noexcept
+#endif
     {
         if (std::isnan(x) || x < U(0))
             return std::numeric_limits<U>::quiet_NaN();
@@ -514,9 +598,14 @@ public:
         }
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U tan(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U tan(U x) noexcept
+#endif
     {
         if constexpr (simd::compile_time::has<simd::Feature::AVX>())
         {
@@ -529,16 +618,26 @@ public:
         return std::tan(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U sqrt(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U sqrt(U x) noexcept
+#endif
     {
         return ArchOp::fast_sqrt(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U rsqrt(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U rsqrt(U x) noexcept
+#endif
     {
         return ArchOp::fast_rsqrt(x);
     }
@@ -591,9 +690,14 @@ public:
         return (a < b) ? a : b;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U exp(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U exp(U x) noexcept
+#endif
     {
         if constexpr (simd::compile_time::has<simd::Feature::AVX>())
         {
@@ -612,16 +716,26 @@ public:
         return std::exp(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static constexpr U toRadians(U degrees) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static constexpr U toRadians(U degrees) noexcept
+#endif
     {
         return degrees * DEG_TO_RAD;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static constexpr U toDegrees(U radians) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static constexpr U toDegrees(U radians) noexcept
+#endif
     {
         return radians * RAD_TO_DEG;
     }
@@ -631,9 +745,14 @@ public:
         return FastOp::signum(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires Integral<U>
     [[nodiscard]] static constexpr U floorDiv(U x, U y)
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_integral_v<U>>>
+    [[nodiscard]] static constexpr U floorDiv(U x, U y)
+#endif
     {
         if (y == 0)
         {
@@ -646,9 +765,14 @@ public:
         return q;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires Integral<U>
     [[nodiscard]] static constexpr U floorMod(U x, U y)
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_integral_v<U>>>
+    [[nodiscard]] static constexpr U floorMod(U x, U y)
+#endif
     {
         if (y == 0)
         {
@@ -660,9 +784,14 @@ public:
         return r;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static int getExponent(U d) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static int getExponent(U d) noexcept
+#endif
     {
         if (d == U(0))
         {
@@ -673,9 +802,14 @@ public:
         return exponent - 1;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U IEEEremainder(U x, U y) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U IEEEremainder(U x, U y) noexcept
+#endif
     {
         if (std::isnan(x) || std::isnan(y) || std::isinf(x) || y == U(0))
         {
@@ -693,9 +827,14 @@ public:
         return r;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U expm1(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U expm1(U x) noexcept
+#endif
     {
         if (std::abs(x) < U(1e-5))
         {
@@ -705,9 +844,14 @@ public:
         return std::expm1(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U log1p(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U log1p(U x) noexcept
+#endif
     {
         if (std::abs(x) < U(1e-5))
         {
@@ -717,9 +861,14 @@ public:
         return std::log1p(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U pow(U base, U exponent) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U pow(U base, U exponent) noexcept
+#endif
     {
         if constexpr (simd::compile_time::has<simd::Feature::AVX>())
         {
@@ -733,9 +882,14 @@ public:
         return std::pow(base, exponent);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U scalb(U d, int scaleFactor) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U scalb(U d, int scaleFactor) noexcept
+#endif
     {
         if (std::isnan(d) || std::isinf(d) || d == U(0))
             return d;
@@ -752,9 +906,14 @@ public:
         return std::scalbn(d, scaleFactor);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U nextAfter(U start, U direction) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U nextAfter(U start, U direction) noexcept
+#endif
     {
         if (std::isnan(start) || std::isnan(direction))
             return std::numeric_limits<U>::quiet_NaN();
@@ -773,9 +932,14 @@ public:
         return std::nextafter(start, direction);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U sinh(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U sinh(U x) noexcept
+#endif
     {
         if (Math::abs(x) < U(0.01))
         {
@@ -785,9 +949,14 @@ public:
         return std::sinh(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U cosh(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U cosh(U x) noexcept
+#endif
     {
         if (Math::abs(x) < U(0.01))
         {
@@ -797,9 +966,14 @@ public:
         return std::cosh(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U tanh(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U tanh(U x) noexcept
+#endif
     {
         if (Math::abs(x) < U(0.01))
         {
@@ -809,9 +983,14 @@ public:
         return std::tanh(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U atan(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U atan(U x) noexcept
+#endif
     {
         if (std::isnan(x))
             return std::numeric_limits<U>::quiet_NaN();
@@ -855,9 +1034,14 @@ public:
         return negate ? -result : result;
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U atan2(U y, U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U atan2(U y, U x) noexcept
+#endif
     {
         if (x == U(0))
         {
@@ -874,9 +1058,14 @@ public:
         return std::atan2(y, x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U asin(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U asin(U x) noexcept
+#endif
     {
         if (std::abs(x) < U(0.01))
         {
@@ -886,9 +1075,14 @@ public:
         return std::asin(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U acos(U x) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U acos(U x) noexcept
+#endif
     {
         if (x > U(0.999))
         {
@@ -903,9 +1097,14 @@ public:
         return std::acos(x);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static U ulp(U d) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    [[nodiscard]] static U ulp(U d) noexcept
+#endif
     {
         if (std::isnan(d) || std::isinf(d))
             return d;
@@ -916,9 +1115,14 @@ public:
         return std::abs(nextVal - d);
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     static void vector_add(const U* a, const U* b, U* result, std::size_t size) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    static void vector_add(const U* a, const U* b, U* result, std::size_t size) noexcept
+#endif
     {
         if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::AVX>())
         {
@@ -939,9 +1143,14 @@ public:
         }
     }
 
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     static void vector_multiply(const U* a, const U* b, U* result, std::size_t size) noexcept
+#else
+    template <typename U = T, typename = std::enable_if_t<std::is_floating_point_v<U>>>
+    static void vector_multiply(const U* a, const U* b, U* result, std::size_t size) noexcept
+#endif
     {
         if constexpr (std::is_same_v<U, float> && simd::compile_time::has<simd::Feature::AVX>())
         {
