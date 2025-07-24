@@ -620,6 +620,79 @@ public:
             r += y;
         return r;
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static int getExponent(U d) noexcept
+    {
+        if (d == U(0))
+        {
+            return std::numeric_limits<U>::min_exponent - 1;
+        }
+        int exponent;
+        std::frexp(std::abs(d), &exponent);
+        return exponent - 1;
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U IEEEremainder(U x, U y) noexcept
+    {
+        if (std::isnan(x) || std::isnan(y) || std::isinf(x) || y == U(0))
+        {
+            return std::numeric_limits<U>::quiet_NaN();
+        }
+        if (std::isinf(y))
+        {
+            return x;
+        }
+        U r = std::remainder(x, y);
+        if (r == U(0))
+        {
+            r = U(0) * x;
+        }
+        return r;
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U expm1(U x) noexcept
+    {
+        if (std::abs(x) < U(1e-5))
+        {
+            U x2 = x * x;
+            return x + x2 * (U(0.5) + x * (U(1.0) / U(6.0) + x * U(1.0) / U(24.0)));
+        }
+        return std::expm1(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U log1p(U x) noexcept
+    {
+        if (std::abs(x) < U(1e-5))
+        {
+            U x2 = x * x;
+            return x - x2 * U(0.5) + x * x2 * U(1.0) / U(3.0);
+        }
+        return std::log1p(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U pow(U base, U exponent) noexcept
+    {
+        if constexpr (simd::compile_time::has<simd::Feature::AVX>())
+        {
+            if (exponent == U(2))
+                return base * base;
+            if (exponent == U(3))
+                return base * base * base;
+            if (exponent == U(0.5))
+                return sqrt(base);
+        }
+        return std::pow(base, exponent);
+    }
 };
 
 }  // namespace umath
