@@ -1,35 +1,20 @@
 #ifndef LIB_UMATH_VEC2_HPP_a5enmn
 #define LIB_UMATH_VEC2_HPP_a5enmn
 
+#include <umath/traits.hpp>
+
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <functional>
-#include <limits>
 #include <random>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
-
-#if __cplusplus >= 202002L
-    #include <concepts>
-    #define MATH_CONCEPTS_ENABLED
-#endif
 
 namespace umath
 {
 namespace detail
 {
-
-template <typename T>
-struct numeric_traits
-{
-    static constexpr bool is_valid =
-        std::is_arithmetic_v<T> && !std::is_same_v<T, bool> && !std::is_same_v<T, char>;
-    using precision_type = std::conditional_t<std::is_floating_point_v<T>, T, double>;
-    static constexpr T epsilon =
-        std::is_floating_point_v<T> ? std::numeric_limits<T>::epsilon() * T{100} : T{};
-};
 
 template <typename T, typename ValueType = void>
 struct is_vector2_like_impl
@@ -86,18 +71,7 @@ constexpr T approximate_inverse_sqrt(T x) noexcept
     }
 }
 
-template <typename T>
-constexpr bool approximately_equal(T a, T b, T tolerance = numeric_traits<T>::epsilon) noexcept
-{
-    if constexpr (std::is_floating_point_v<T>)
-    {
-        return std::abs(a - b) <= tolerance * std::max({T{1}, std::abs(a), std::abs(b)});
-    }
-    else
-    {
-        return a == b;
-    }
-}
+
 
 inline std::random_device rd;
 inline std::mt19937 gen{rd()};
@@ -105,18 +79,11 @@ inline std::normal_distribution<double> normal_dist{0.0, 1.0};
 inline std::uniform_real_distribution<double> uniform_dist{0.0, 1.0};
 }  // namespace detail
 
-constexpr double PI = 3.14159265358979323846;
-constexpr double HALF_PI = PI * 0.5;
-constexpr double TWO_PI = PI * 2.0;
+constexpr double PI = constants::pi<double>;
+constexpr double HALF_PI = constants::half_pi<double>;
+constexpr double TWO_PI = constants::two_pi<double>;
 
-#ifdef MATH_CONCEPTS_ENABLED
-template <typename T>
-concept Arithmetic =
-    std::is_arithmetic_v<T> && !std::is_same_v<T, bool> && !std::is_same_v<T, char>;
-
-template <typename T>
-concept FloatingPoint = std::is_floating_point_v<T>;
-
+#ifdef UMATH_CONCEPTS_ENABLED
 template <typename T, typename ValueType = void>
 concept Vector2Like =
     requires(T t) {
@@ -141,7 +108,7 @@ template <typename T>
 requires Arithmetic<T>
 class alignas(sizeof(T) * 2) Vector2
 #else
-template <typename T, typename = std::enable_if_t<detail::numeric_traits<T>::is_valid>>
+template <typename T, typename = std::enable_if_t<numeric_traits<T>::is_valid>>
 class alignas(sizeof(T) * 2) Vector2
 #endif
 {
@@ -149,11 +116,11 @@ public:
     using value_type = T;
     using reference = T&;
     using const_reference = const T&;
-    using precision_type = typename detail::numeric_traits<T>::precision_type;
+    using precision_type = typename numeric_traits<T>::precision_type;
     using size_type = std::size_t;
 
     static constexpr size_type dimensions = 2;
-    static constexpr T epsilon = detail::numeric_traits<T>::epsilon;
+    static constexpr T epsilon = numeric_traits<T>::epsilon;
 
     constexpr Vector2() noexcept : x{}, y{} {}
 
@@ -172,7 +139,7 @@ public:
     explicit constexpr Vector2(const Vector2<U>& other) noexcept
 #else
     template <typename U,
-              typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+              typename = std::enable_if_t<numeric_traits<U>::is_valid
                                           && std::is_convertible_v<U, T>>>
     explicit constexpr Vector2(const Vector2<U>& other) noexcept
 #endif
@@ -186,7 +153,7 @@ public:
     class ImmutableVector2
 #else
     template <typename ValueType = T,
-              typename = std::enable_if_t<detail::numeric_traits<ValueType>::is_valid
+              typename = std::enable_if_t<numeric_traits<ValueType>::is_valid
                                           && std::is_convertible_v<ValueType, T>>>
     class ImmutableVector2
 #endif
@@ -208,7 +175,7 @@ public:
             typename X,
             typename Y,
             typename = std::enable_if_t<
-                detail::numeric_traits<X>::is_valid && detail::numeric_traits<Y>::is_valid
+                numeric_traits<X>::is_valid && numeric_traits<Y>::is_valid
                 && std::is_convertible_v<X, ValueType> && std::is_convertible_v<Y, ValueType>>>
         constexpr ImmutableVector2(X&& x_val, Y&& y_val) noexcept
 #endif
@@ -223,7 +190,7 @@ public:
         constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
 #else
         template <typename U,
-                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                  typename = std::enable_if_t<numeric_traits<U>::is_valid
                                               && std::is_convertible_v<U, ValueType>>>
         constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
 #endif
@@ -237,7 +204,7 @@ public:
         constexpr explicit ImmutableVector2(const ImmutableVector2<U>& other) noexcept
 #else
         template <typename U,
-                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                  typename = std::enable_if_t<numeric_traits<U>::is_valid
                                               && std::is_convertible_v<U, ValueType>>>
         constexpr explicit ImmutableVector2(const ImmutableVector2<U>& other) noexcept
 #endif
@@ -260,7 +227,7 @@ public:
         [[nodiscard]] constexpr operator Vector2<U>() const noexcept
 #else
         template <typename U = T,
-                  typename = std::enable_if_t<detail::numeric_traits<U>::is_valid
+                  typename = std::enable_if_t<numeric_traits<U>::is_valid
                                               && std::is_convertible_v<ValueType, U>>>
         [[nodiscard]] constexpr operator Vector2<U>() const noexcept
 #endif
@@ -273,7 +240,7 @@ public:
         requires Arithmetic<U>
         [[nodiscard]] constexpr auto as() const noexcept -> ImmutableVector2<U>
 #else
-        template <typename U, typename = std::enable_if_t<detail::numeric_traits<U>::is_valid>>
+        template <typename U, typename = std::enable_if_t<numeric_traits<U>::is_valid>>
         [[nodiscard]] constexpr auto as() const noexcept -> ImmutableVector2<U>
 #endif
         {

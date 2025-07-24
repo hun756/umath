@@ -2,17 +2,14 @@
 #define LIB_UMATH_HPP_p7q7hl
 
 #include <simd/feature_check.hpp>
+#include <umath/traits.hpp>
 
 #include <cmath>
-#include <limits>
 #include <stdexcept>
-#include <type_traits>
 
-#if __cplusplus >= 202'002L
+#if __cplusplus >= 202002L
     #include <bit>
-    #include <numbers>
 #endif
-
 
 namespace umath
 {
@@ -21,49 +18,6 @@ class arithmetic_overflow final : public std::runtime_error
 {
 public:
     explicit arithmetic_overflow(const char* message) noexcept : std::runtime_error(message) {}
-};
-
-
-#if __cplusplus >= 202'002L
-    #define UMATH_CONCEPTS_ENABLED
-#endif
-
-#ifdef UMATH_CONCEPTS_ENABLED
-template <typename T>
-concept Arithmetic = std::is_arithmetic_v<T>;
-
-template <typename T>
-concept FloatingPoint = std::is_floating_point_v<T>;
-
-template <typename T>
-concept Integral = std::is_integral_v<T>;
-
-template <typename T>
-concept SignedIntegral = Integral<T> && std::is_signed_v<T>;
-#else
-template <typename T>
-using Arithmetic = std::enable_if_t<std::is_arithmetic_v<T>, bool>;
-
-template <typename T>
-using FloatingPoint = std::enable_if_t<std::is_floating_point_v<T>, bool>;
-
-template <typename T>
-using Integral = std::enable_if_t<std::is_integral_v<T>, bool>;
-
-template <typename T>
-using SignedIntegral = std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>, bool>;
-#endif
-
-template <typename T>
-struct FloatTraits
-{
-    static constexpr bool is_float = std::is_floating_point_v<T>;
-    static constexpr T epsilon = std::numeric_limits<T>::epsilon();
-    static constexpr T infinity = std::numeric_limits<T>::infinity();
-    static constexpr T quiet_nan = std::numeric_limits<T>::quiet_NaN();
-    static constexpr T signaling_nan = std::numeric_limits<T>::signaling_NaN();
-    static constexpr int max_exponent = std::numeric_limits<T>::max_exponent;
-    static constexpr int min_exponent = std::numeric_limits<T>::min_exponent;
 };
 
 namespace detail
@@ -171,28 +125,19 @@ struct FastOps
 {
     [[nodiscard]] static constexpr T abs(T x) noexcept
     {
-        if constexpr (std::is_unsigned_v<T>)
-        {
-            return x;
-        }
-        else
-        {
-            const T mask = x >> (std::numeric_limits<T>::digits - 1);
-            return (x + mask) ^ mask;
-        }
+        return detail::fast_abs(x);
     }
 
     [[nodiscard]] static constexpr T signum(T x) noexcept
     {
-        return (T(0) < x) - (x < T(0));
+        return detail::signum(x);
     }
 
     template <typename U = T>
     [[nodiscard]] static constexpr std::enable_if_t<std::is_integral_v<U>, U> fast_mod(U x,
                                                                                        U y) noexcept
     {
-#if __cplusplus >= 202'002L
-        if constexpr (std::has_single_bit(y))
+        if (detail::is_power_of_two(y))
         {
             return x & (y - 1);
         }
@@ -200,16 +145,6 @@ struct FastOps
         {
             return x % y;
         }
-#else
-        if ((y & (y - 1)) == 0 && y != 0)
-        {
-            return x & (y - 1);
-        }
-        else
-        {
-            return x % y;
-        }
-#endif
     }
 };
 
@@ -225,13 +160,8 @@ class Math final
 #endif
 {
 private:
-#if __cplusplus >= 202'002L
-    static constexpr T PI = std::numbers::pi_v<T>;
-    static constexpr T E = std::numbers::e_v<T>;
-#else
-    static constexpr T PI = T(3.14159265358979323846264338327950288);
-    static constexpr T E = T(2.71828182845904523536028747135266250);
-#endif
+    static constexpr T PI = constants::pi<T>;
+    static constexpr T E = constants::e<T>;
 
     using Checker = detail::OverflowChecker<T>;
     using FastOp = detail::FastOps<T>;
