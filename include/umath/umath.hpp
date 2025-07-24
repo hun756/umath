@@ -7,10 +7,6 @@
 #include <cmath>
 #include <stdexcept>
 
-#if __cplusplus >= 202002L
-    #include <bit>
-#endif
-
 namespace umath
 {
 

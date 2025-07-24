@@ -6,8 +6,10 @@
 #include <type_traits>
 
 #if __cplusplus >= 202'002L
+    #include <bit>
     #include <concepts>
     #include <numbers>
+
     #define UMATH_CONCEPTS_ENABLED
 #endif
 
