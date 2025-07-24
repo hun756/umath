@@ -323,7 +323,7 @@ TEST_F(Vector2Test, Length)
 
 TEST_F(Vector2Test, FastLength)
 {
-    EXPECT_NEAR(v1.fast_length(), 5.0f, 0.5f);
+    EXPECT_NEAR(v1.approximate_length(), 5.0f, 0.5f);
 }
 
 TEST_F(Vector2Test, DotProduct)
@@ -374,7 +374,7 @@ TEST_F(Vector2Test, NormalizeMemberFunction)
 
 TEST_F(Vector2Test, FastNormalization)
 {
-    auto normalized = Vector2f::normalize_fast(v1);
+    auto normalized = Vector2f::normalize_approximate(v1);
     EXPECT_NEAR(normalized.length(), 1.0f, 0.01f);
 }
 
@@ -411,7 +411,7 @@ TEST_F(Vector2Test, DistanceMemberFunction)
 
 TEST_F(Vector2Test, FastDistance)
 {
-    float fast_dist = Vector2f::distance_fast(v1, v2);
+    float fast_dist = Vector2f::distance_approximate(v1, v2);
     EXPECT_NEAR(fast_dist, std::sqrt(8.0f), 0.5f);
 }
 
@@ -451,7 +451,7 @@ TEST_F(Vector2Test, FastAngle)
 {
     Vector2f v_from(0.0f, 0.0f);
     Vector2f v_to(1.0f, 1.0f);
-    float angle = Vector2f::fast_angle(v_from, v_to);
+    float angle = Vector2f::angle_approximate(v_from, v_to);
     EXPECT_NEAR(angle, PI / 4.0f, 0.1f);
 }
 
@@ -466,7 +466,7 @@ TEST_F(Vector2Test, Rotation)
 TEST_F(Vector2Test, FastRotation)
 {
     Vector2f vec(1.0f, 0.0f);
-    auto rotated = Vector2f::rotate_fast(vec, static_cast<float>(PI) / 2.0f);
+    auto rotated = Vector2f::rotate_optimized(vec, static_cast<float>(PI) / 2.0f);
     EXPECT_NEAR(rotated.x, 0.0f, 0.01f);
     EXPECT_NEAR(rotated.y, 1.0f, 0.01f);
 }
@@ -614,8 +614,8 @@ TEST_F(Vector2Test, RandomVector)
 
 TEST_F(Vector2Test, RandomFastVector)
 {
-    auto random1 = Vector2f::random_fast(1.0f);
-    auto random2 = Vector2f::random_fast(1.0f);
+    auto random1 = Vector2f::random_quick(1.0f);
+    auto random2 = Vector2f::random_quick(1.0f);
 
     EXPECT_FALSE(random1.approximately_equals(random2, 0.001f));
     EXPECT_NEAR(random1.length(), 1.0f, epsilon);
@@ -1087,17 +1087,17 @@ TEST_F(Vector2Test, FastOperationsConsistency)
     Vector2f vec(3.0f, 4.0f);
 
     float regular_length = vec.length();
-    float fast_length = vec.fast_length();
+    float fast_length = vec.approximate_length();
     EXPECT_NEAR(fast_length, regular_length, regular_length * 0.1f);
 
     auto regular_norm = Vector2f::normalize(vec);
-    auto fast_norm = Vector2f::normalize_fast(vec);
+    auto fast_norm = Vector2f::normalize_approximate(vec);
     EXPECT_NEAR(fast_norm.x, regular_norm.x, 0.01f);
     EXPECT_NEAR(fast_norm.y, regular_norm.y, 0.01f);
 
     float angle = PI / 6.0f;
     auto regular_rot = Vector2f::rotate(vec, angle);
-    auto fast_rot = Vector2f::rotate_fast(vec, angle);
+    auto fast_rot = Vector2f::rotate_optimized(vec, angle);
     EXPECT_NEAR(fast_rot.x, regular_rot.x, 0.01f);
     EXPECT_NEAR(fast_rot.y, regular_rot.y, 0.01f);
 }
