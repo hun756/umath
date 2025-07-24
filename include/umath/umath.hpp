@@ -193,6 +193,45 @@ private:
     using FastOp = detail::FastOps<T>;
     using ArchOp = detail::ArchSpecificOps<T>;
 
+    template <typename U>
+    [[nodiscard]] static U impl_atan_core(U x) noexcept
+    {
+        static constexpr std::array<U, 11> C = {U(1.0),
+                                                U(-0.3333333333333333333333333333333),
+                                                U(0.2),
+                                                U(-0.1428571428571428571428571428571),
+                                                U(0.1111111111111111111111111111111),
+                                                U(-0.0909090909090909090909090909091),
+                                                U(0.0769230769230769230769230769231),
+                                                U(-0.0666666666666666666666666666667),
+                                                U(0.0588235294117647058823529411765),
+                                                U(-0.0526315789473684210526315789474),
+                                                U(0.0476190476190476190476190476190)};
+
+        const U x2 = x * x;
+        U result = U(0);
+
+        if constexpr (simd::compile_time::has<simd::Feature::FMA>())
+        {
+            result = C[10];
+            for (int i = 9; i >= 0; --i)
+            {
+                result = std::fma(result, x2, C[i]);
+            }
+        }
+        else
+        {
+            // standard Horner
+            result = C[10];
+            for (int i = 9; i >= 0; --i)
+            {
+                result = result * x2 + C[i];
+            }
+        }
+
+        return result * x;
+    }
+
 public:
     Math() = delete;
     ~Math() = delete;
