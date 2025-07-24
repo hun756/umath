@@ -693,6 +693,82 @@ public:
         }
         return std::pow(base, exponent);
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U scalb(U d, int scaleFactor) noexcept
+    {
+        if (std::isnan(d) || std::isinf(d) || d == U(0))
+            return d;
+        if (scaleFactor == 0)
+            return d;
+        if (scaleFactor >= std::numeric_limits<int>::max() / 2)
+        {
+            return d * std::numeric_limits<U>::infinity();
+        }
+        if (scaleFactor <= std::numeric_limits<int>::min() / 2)
+        {
+            return d * U(0);
+        }
+        return std::scalbn(d, scaleFactor);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U nextAfter(U start, U direction) noexcept
+    {
+        if (std::isnan(start) || std::isnan(direction))
+            return std::numeric_limits<U>::quiet_NaN();
+        if (start == direction)
+            return direction;
+        if (std::isinf(start))
+        {
+            return direction < start ? std::numeric_limits<U>::max()
+                                     : std::numeric_limits<U>::infinity();
+        }
+        if (start == U(0))
+        {
+            return direction < U(0) ? -std::numeric_limits<U>::denorm_min()
+                                    : std::numeric_limits<U>::denorm_min();
+        }
+        return std::nextafter(start, direction);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U sinh(U x) noexcept
+    {
+        if (std::abs(x) < U(0.01))
+        {
+            U x2 = x * x;
+            return x * (U(1) + x2 * (U(1) / U(6) + x2 * (U(1) / U(120))));
+        }
+        return std::sinh(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U cosh(U x) noexcept
+    {
+        if (std::abs(x) < U(0.01))
+        {
+            U x2 = x * x;
+            return U(1) + x2 * (U(0.5) + x2 * (U(1) / U(24)));
+        }
+        return std::cosh(x);
+    }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U tanh(U x) noexcept
+    {
+        if (std::abs(x) < U(0.01))
+        {
+            U x2 = x * x;
+            return x * (U(1) - x2 * (U(1) / U(3)));
+        }
+        return std::tanh(x);
+    }
 };
 
 }  // namespace umath
