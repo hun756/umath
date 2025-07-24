@@ -138,8 +138,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 add_executable(${PROJECT_NAME}_exe src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_exe PRIVATE ${PROJECT_NAME})
 
-# Link simd_feature_check to the main library
-target_link_libraries(${PROJECT_NAME} PUBLIC simd_feature_check)
 set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 # Build examples if enabled
