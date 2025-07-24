@@ -769,6 +769,52 @@ public:
         }
         return std::tanh(x);
     }
+
+    template <typename U = T>
+    requires FloatingPoint<U>
+    [[nodiscard]] static U atan(U x) noexcept
+    {
+        if (std::isnan(x))
+            return std::numeric_limits<U>::quiet_NaN();
+        if (x == U(0))
+            return U(0);
+        if (std::isinf(x))
+            return std::copysign(PI / U(2), x);
+
+        // taylor series approximation for small x
+        if (std::abs(x) < U(0.01))
+        {
+            U x2 = x * x;
+            return x * (U(1) - x2 * (U(1) / U(3) - x2 * (U(1) / U(5) - x2 * U(1) / U(7))));
+        }
+
+        // atan(x) calculating strategy:
+        // 1. if |x| > 1 atan(x) = π/2 - atan(1/x)
+        // 2. if |x| > tan(π/12) atan(x) = π/6 + atan((x*√3-1)/(x+√3))
+        const bool negate = x < U(0);
+        x = Math::abs(x);
+
+        U result;
+        if (x > U(1))
+        {
+            // |x| > 1 statement
+            x = U(1) / x;
+            result = PI / U(2) - impl_atan_core(x);
+        }
+        else if (x > U(0.26794919243112270647))
+        {
+            // tan(π/12)
+            // π/6 reduction
+            static constexpr U SQRT3 = U(1.7320508075688772935274463415059);
+            result = PI / U(6) + impl_atan_core((x * SQRT3 - U(1)) / (x + SQRT3));
+        }
+        else
+        {
+            result = impl_atan_core(x);
+        }
+
+        return negate ? -result : result;
+    }
 };
 
 }  // namespace umath
