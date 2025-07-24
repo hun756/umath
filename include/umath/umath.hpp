@@ -738,7 +738,7 @@ public:
     requires FloatingPoint<U>
     [[nodiscard]] static U sinh(U x) noexcept
     {
-        if (std::abs(x) < U(0.01))
+        if (Math::abs(x) < U(0.01))
         {
             U x2 = x * x;
             return x * (U(1) + x2 * (U(1) / U(6) + x2 * (U(1) / U(120))));
@@ -750,7 +750,7 @@ public:
     requires FloatingPoint<U>
     [[nodiscard]] static U cosh(U x) noexcept
     {
-        if (std::abs(x) < U(0.01))
+        if (Math::abs(x) < U(0.01))
         {
             U x2 = x * x;
             return U(1) + x2 * (U(0.5) + x2 * (U(1) / U(24)));
@@ -762,7 +762,7 @@ public:
     requires FloatingPoint<U>
     [[nodiscard]] static U tanh(U x) noexcept
     {
-        if (std::abs(x) < U(0.01))
+        if (Math::abs(x) < U(0.01))
         {
             U x2 = x * x;
             return x * (U(1) - x2 * (U(1) / U(3)));
