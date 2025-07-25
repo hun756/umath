@@ -1,12 +1,20 @@
 #include <umath/umath.hpp>
-
 #include <iostream>
-
+#include <locale>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace umath;
 
 int main()
 {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
+    std::cout.imbue(std::locale(".UTF-8"));
+
+
     std::cout << "=== Angle Conversions ===" << std::endl;
 
     std::cout << "Degrees to radians:" << std::endl;
