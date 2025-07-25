@@ -610,3 +610,130 @@ TEST_F(MathTest, ExponentialAndLogarithmicRelationships)
         }
     }
 }
+TEST_F(MathTest, ExponentialMinusOneFunctions)
+{
+    EXPECT_NEAR(Math<float>::expm1(0.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::expm1(0.0), 0.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::expm1(1.0f), std::exp(1.0f) - 1.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::expm1(1.0), std::exp(1.0) - 1.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::expm1(0.001f), std::expm1(0.001f), epsilon_f);
+    EXPECT_NEAR(Math<double>::expm1(0.001), std::expm1(0.001), epsilon_d);
+}
+
+TEST_F(MathTest, LogarithmPlusOneFunctions)
+{
+    EXPECT_NEAR(Math<float>::log1p(0.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::log1p(0.0), 0.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::log1p(1.0f), std::log(2.0f), epsilon_f);
+    EXPECT_NEAR(Math<double>::log1p(1.0), std::log(2.0), epsilon_d);
+
+    EXPECT_NEAR(Math<float>::log1p(0.001f), std::log1p(0.001f), epsilon_f);
+    EXPECT_NEAR(Math<double>::log1p(0.001), std::log1p(0.001), epsilon_d);
+}
+
+TEST_F(MathTest, UnitInLastPlaceFunction)
+{
+    EXPECT_GT(Math<float>::ulp(1.0f), 0.0f);
+    EXPECT_GT(Math<double>::ulp(1.0), 0.0);
+
+    EXPECT_EQ(Math<float>::ulp(0.0f), std::numeric_limits<float>::denorm_min());
+    EXPECT_EQ(Math<double>::ulp(0.0), std::numeric_limits<double>::denorm_min());
+
+    EXPECT_TRUE(std::isnan(Math<float>::ulp(std::numeric_limits<float>::quiet_NaN())));
+    EXPECT_TRUE(std::isinf(Math<float>::ulp(std::numeric_limits<float>::infinity())));
+}
+
+TEST_F(MathTest, TwoArgumentArctangentFunction)
+{
+    constexpr float PI_F = 3.14159265358979323846f;
+    constexpr double PI_D = 3.14159265358979323846;
+
+    EXPECT_NEAR(Math<float>::atan2(0.0f, 1.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::atan2(0.0, 1.0), 0.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::atan2(1.0f, 0.0f), PI_F / 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::atan2(1.0, 0.0), PI_D / 2.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::atan2(-1.0f, 0.0f), -PI_F / 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::atan2(-1.0, 0.0), -PI_D / 2.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::atan2(1.0f, 1.0f), PI_F / 4.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::atan2(1.0, 1.0), PI_D / 4.0, epsilon_d);
+}
+
+TEST_F(MathTest, ArcsineFunction)
+{
+    constexpr float PI_F = 3.14159265358979323846f;
+    constexpr double PI_D = 3.14159265358979323846;
+
+    EXPECT_NEAR(Math<float>::asin(0.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::asin(0.0), 0.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::asin(1.0f), PI_F / 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::asin(1.0), PI_D / 2.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::asin(-1.0f), -PI_F / 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::asin(-1.0), -PI_D / 2.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::asin(0.5f), PI_F / 6.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::asin(0.5), PI_D / 6.0, epsilon_d);
+}
+
+TEST_F(MathTest, ArccosineFunction)
+{
+    constexpr float PI_F = 3.14159265358979323846f;
+    constexpr double PI_D = 3.14159265358979323846;
+
+    EXPECT_NEAR(Math<float>::acos(1.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::acos(1.0), 0.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::acos(0.0f), PI_F / 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::acos(0.0), PI_D / 2.0, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::acos(-1.0f), PI_F, epsilon_f);
+    EXPECT_NEAR(Math<double>::acos(-1.0), PI_D, epsilon_d);
+
+    EXPECT_NEAR(Math<float>::acos(0.5f), PI_F / 3.0f, epsilon_f);
+    EXPECT_NEAR(Math<double>::acos(0.5), PI_D / 3.0, epsilon_d);
+}
+
+TEST_F(MathTest, VectorOperations)
+{
+    constexpr size_t size = 8;
+    float a_f[size] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+    float b_f[size] = {8.0f, 7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f};
+    float result_f[size];
+
+    Math<float>::vector_add(a_f, b_f, result_f, size);
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_NEAR(result_f[i], 9.0f, epsilon_f);
+    }
+
+    Math<float>::vector_multiply(a_f, b_f, result_f, size);
+    float expected_mult[size] = {8.0f, 14.0f, 18.0f, 20.0f, 20.0f, 18.0f, 14.0f, 8.0f};
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_NEAR(result_f[i], expected_mult[i], epsilon_f);
+    }
+
+    double a_d[size] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+    double b_d[size] = {8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
+    double result_d[size];
+
+    Math<double>::vector_add(a_d, b_d, result_d, size);
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_NEAR(result_d[i], 9.0, epsilon_d);
+    }
+
+    Math<double>::vector_multiply(a_d, b_d, result_d, size);
+    double expected_mult_d[size] = {8.0, 14.0, 18.0, 20.0, 20.0, 18.0, 14.0, 8.0};
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_NEAR(result_d[i], expected_mult_d[i], epsilon_d);
+    }
+}
