@@ -201,3 +201,137 @@ TEST_F(MathTest, AngleConversions)
     EXPECT_NEAR(Math<double>::toDegrees(PI_D), 180.0, 0.001);
     EXPECT_NEAR(Math<double>::toDegrees(2.0 * PI_D), 360.0, 0.001);
 }
+TEST_F(MathTest, ExponentialFunctions)
+{
+    constexpr float E_F = 2.71828182845904523536f;
+    constexpr double E_D = 2.71828182845904523536;
+    
+    EXPECT_NEAR(Math<float>::exp(0.0f), 1.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::exp(1.0f), E_F, 0.001f);
+    EXPECT_NEAR(Math<float>::exp(-1.0f), 1.0f / E_F, 0.001f);
+    EXPECT_NEAR(Math<float>::exp(2.0f), E_F * E_F, 0.01f);
+    
+    EXPECT_NEAR(Math<double>::exp(0.0), 1.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::exp(1.0), E_D, 0.001);
+    EXPECT_NEAR(Math<double>::exp(-1.0), 1.0 / E_D, 0.001);
+    EXPECT_NEAR(Math<double>::exp(2.0), E_D * E_D, 0.01);
+    
+    EXPECT_NEAR(Math<float>::expm1(0.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::expm1(1.0f), E_F - 1.0f, 0.001f);
+    EXPECT_NEAR(Math<float>::expm1(-1.0f), 1.0f / E_F - 1.0f, 0.001f);
+    
+    EXPECT_NEAR(Math<double>::expm1(0.0), 0.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::expm1(1.0), E_D - 1.0, 0.001);
+    EXPECT_NEAR(Math<double>::expm1(-1.0), 1.0 / E_D - 1.0, 0.001);
+}
+
+TEST_F(MathTest, LogarithmicFunctions)
+{
+    constexpr float E_F = 2.71828182845904523536f;
+    constexpr double E_D = 2.71828182845904523536;
+    
+    EXPECT_NEAR(Math<float>::log10(1.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::log10(10.0f), 1.0f, 0.15f);
+    EXPECT_NEAR(Math<float>::log10(100.0f), 2.0f, 0.15f);
+    EXPECT_NEAR(Math<float>::log10(0.1f), -1.0f, 0.15f);
+    
+    EXPECT_NEAR(Math<double>::log10(1.0), 0.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::log10(10.0), 1.0, 0.15);
+    EXPECT_NEAR(Math<double>::log10(100.0), 2.0, 0.15);
+    EXPECT_NEAR(Math<double>::log10(0.1), -1.0, 0.15);
+    
+    EXPECT_NEAR(Math<float>::log1p(0.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::log1p(E_F - 1.0f), 1.0f, 0.001f);
+    
+    EXPECT_NEAR(Math<double>::log1p(0.0), 0.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::log1p(E_D - 1.0), 1.0, 0.001);
+    
+    EXPECT_TRUE(std::isnan(Math<float>::log10(-1.0f)));
+    EXPECT_TRUE(std::isinf(Math<float>::log10(0.0f)));
+    EXPECT_TRUE(std::isinf(Math<float>::log10(std::numeric_limits<float>::infinity())));
+    
+    EXPECT_TRUE(std::isnan(Math<double>::log10(-1.0)));
+    EXPECT_TRUE(std::isinf(Math<double>::log10(0.0)));
+    EXPECT_TRUE(std::isinf(Math<double>::log10(std::numeric_limits<double>::infinity())));
+}
+
+TEST_F(MathTest, PowerFunctions)
+{
+    EXPECT_NEAR(Math<float>::pow(2.0f, 0.0f), 1.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::pow(2.0f, 1.0f), 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::pow(2.0f, 2.0f), 4.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::pow(2.0f, 3.0f), 8.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::pow(2.0f, -1.0f), 0.5f, epsilon_f);
+    EXPECT_NEAR(Math<float>::pow(4.0f, 0.5f), 2.0f, epsilon_f);
+    
+    EXPECT_NEAR(Math<double>::pow(2.0, 0.0), 1.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::pow(2.0, 1.0), 2.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::pow(2.0, 2.0), 4.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::pow(2.0, 3.0), 8.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::pow(2.0, -1.0), 0.5, epsilon_d);
+    EXPECT_NEAR(Math<double>::pow(4.0, 0.5), 2.0, epsilon_d);
+    
+    EXPECT_NEAR(Math<float>::cbrt(8.0f), 2.0f, 0.01f);
+    EXPECT_NEAR(Math<float>::cbrt(27.0f), 3.0f, 0.01f);
+    EXPECT_NEAR(Math<float>::cbrt(0.0f), 0.0f, epsilon_f);
+    
+    EXPECT_NEAR(Math<double>::cbrt(8.0), 2.0, 0.2);
+    EXPECT_NEAR(Math<double>::cbrt(27.0), 3.0, 0.2);
+    EXPECT_NEAR(Math<double>::cbrt(0.0), 0.0, epsilon_d);
+    
+    EXPECT_TRUE(std::isnan(Math<float>::cbrt(std::numeric_limits<float>::quiet_NaN())));
+    EXPECT_TRUE(std::isinf(Math<float>::cbrt(std::numeric_limits<float>::infinity())));
+    
+    EXPECT_TRUE(std::isnan(Math<double>::cbrt(std::numeric_limits<double>::quiet_NaN())));
+    EXPECT_TRUE(std::isinf(Math<double>::cbrt(std::numeric_limits<double>::infinity())));
+}
+
+TEST_F(MathTest, SquareRootFunctions)
+{
+    EXPECT_NEAR(Math<float>::sqrt(0.0f), 0.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::sqrt(1.0f), 1.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::sqrt(4.0f), 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::sqrt(9.0f), 3.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::sqrt(16.0f), 4.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::sqrt(25.0f), 5.0f, epsilon_f);
+    
+    EXPECT_NEAR(Math<double>::sqrt(0.0), 0.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::sqrt(1.0), 1.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::sqrt(4.0), 2.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::sqrt(9.0), 3.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::sqrt(16.0), 4.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::sqrt(25.0), 5.0, epsilon_d);
+    
+    EXPECT_NEAR(Math<float>::rsqrt(1.0f), 1.0f, 0.01f);
+    EXPECT_NEAR(Math<float>::rsqrt(4.0f), 0.5f, 0.01f);
+    EXPECT_NEAR(Math<float>::rsqrt(9.0f), 1.0f / 3.0f, 0.01f);
+    EXPECT_NEAR(Math<float>::rsqrt(16.0f), 0.25f, 0.01f);
+    
+    EXPECT_NEAR(Math<double>::rsqrt(1.0), 1.0, 0.01);
+    EXPECT_NEAR(Math<double>::rsqrt(4.0), 0.5, 0.01);
+    EXPECT_NEAR(Math<double>::rsqrt(9.0), 1.0 / 3.0, 0.01);
+    EXPECT_NEAR(Math<double>::rsqrt(16.0), 0.25, 0.01);
+}
+
+TEST_F(MathTest, HypotFunction)
+{
+    EXPECT_NEAR(Math<float>::hypot(3.0f, 4.0f), 5.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::hypot(5.0f, 12.0f), 13.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::hypot(8.0f, 15.0f), 17.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::hypot(0.0f, 0.0f), 0.0f, epsilon_f);
+    
+    EXPECT_NEAR(Math<double>::hypot(3.0, 4.0), 5.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::hypot(5.0, 12.0), 13.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::hypot(8.0, 15.0), 17.0, epsilon_d);
+    EXPECT_NEAR(Math<double>::hypot(0.0, 0.0), 0.0, epsilon_d);
+    
+    EXPECT_TRUE(std::isnan(Math<float>::hypot(std::numeric_limits<float>::quiet_NaN(), 1.0f)));
+    EXPECT_TRUE(std::isnan(Math<float>::hypot(1.0f, std::numeric_limits<float>::quiet_NaN())));
+    EXPECT_TRUE(std::isinf(Math<float>::hypot(std::numeric_limits<float>::infinity(), 1.0f)));
+    EXPECT_TRUE(std::isinf(Math<float>::hypot(1.0f, std::numeric_limits<float>::infinity())));
+    
+    EXPECT_TRUE(std::isnan(Math<double>::hypot(std::numeric_limits<double>::quiet_NaN(), 1.0)));
+    EXPECT_TRUE(std::isnan(Math<double>::hypot(1.0, std::numeric_limits<double>::quiet_NaN())));
+    EXPECT_TRUE(std::isinf(Math<double>::hypot(std::numeric_limits<double>::infinity(), 1.0)));
+    EXPECT_TRUE(std::isinf(Math<double>::hypot(1.0, std::numeric_limits<double>::infinity())));
+}
