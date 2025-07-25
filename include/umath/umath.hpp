@@ -388,40 +388,42 @@ public:
             return x;
         }
 
+        const bool negative = x < U(0);
+        const U abs_x = negative ? -x : x;
+        
         U y;
         if constexpr (std::is_same_v<U, float>)
         {
             std::int32_t ix;
-            std::memcpy(&ix, &x, sizeof(float));
+            std::memcpy(&ix, &abs_x, sizeof(float));
             ix = ix / 3 + 709'921'077;
             std::memcpy(&y, &ix, sizeof(float));
         }
         else
         {
             int exp;
-            U mant = std::frexp(std::abs(x), &exp);
+            U mant = std::frexp(abs_x, &exp);
             y = std::ldexp(std::pow(U(2), U(exp % 3)) * std::pow(mant, U(1) / U(3)), exp / 3);
         }
 
         if constexpr (simd::compile_time::has<simd::Feature::FMA>())
         {
-            for (int i = 0; i < (std::is_same_v<U, float> ? 2 : 3); ++i)
+            for (int i = 0; i < (std::is_same_v<U, float> ? 3 : 4); ++i)
             {
                 U y2 = y * y;
-                U y3 = y * y2;
-                y = std::fma(y, U(2), x / y2) * U(1) / U(3);
+                y = std::fma(y, U(2), abs_x / y2) * U(1) / U(3);
             }
         }
         else
         {
-            for (int i = 0; i < (std::is_same_v<U, float> ? 2 : 3); ++i)
+            for (int i = 0; i < (std::is_same_v<U, float> ? 3 : 4); ++i)
             {
                 U y2 = y * y;
-                y = (U(2) * y + x / y2) * U(1) / U(3);
+                y = (U(2) * y + abs_x / y2) * U(1) / U(3);
             }
         }
 
-        return std::signbit(x) ? -y : y;
+        return negative ? -y : y;
     }
 
 #ifdef UMATH_CONCEPTS_ENABLED
@@ -476,7 +478,8 @@ public:
         if (x == U(1))
             return U(0);
 
-        static constexpr U LOG10_2 = U(0.301029995663981195213738894724);
+        static constexpr U LOG10_2 = U(0.3010299956639812);
+        static constexpr U LOG10_E = U(0.4342944819032518);
 
         int exp;
         U mantissa = std::frexp(x, &exp);
@@ -487,41 +490,47 @@ public:
             exp--;
         }
 
-        mantissa -= U(1);
+        U z = (mantissa - U(1)) / (mantissa + U(1));
+        U z2 = z * z;
 
+        U ln_result;
         if constexpr (simd::compile_time::has<simd::Feature::FMA>())
         {
-            static constexpr std::array<U, 7> C = {U(1.44269504088896340735992468100),
-                                                   U(-0.721347520444482321375724860100),
-                                                   U(0.479562288154233437462321694088),
-                                                   U(-0.343919840191426222699399068339),
-                                                   U(0.262203599088046952191325362389),
-                                                   U(-0.206803849532505428332945754492),
-                                                   U(0.168498995576053976569765001550)};
+            static constexpr std::array<U, 8> C = {U(2.0),
+                                                   U(0.6666666666666666),
+                                                   U(0.4),
+                                                   U(0.2857142857142857),
+                                                   U(0.2222222222222222),
+                                                   U(0.1818181818181818),
+                                                   U(0.1538461538461538),
+                                                   U(0.1333333333333333)};
+
+            U sum = C[7];
+            for (int i = 6; i >= 0; --i)
+            {
+                sum = std::fma(sum, z2, C[i]);
+            }
+            ln_result = sum * z + static_cast<U>(exp) * U(0.6931471805599453);
+        }
+        else
+        {
+            static constexpr std::array<U, 7> C = {U(2.0),
+                                                   U(0.6666666666666666),
+                                                   U(0.4),
+                                                   U(0.2857142857142857),
+                                                   U(0.2222222222222222),
+                                                   U(0.1818181818181818),
+                                                   U(0.1538461538461538)};
 
             U sum = C[6];
             for (int i = 5; i >= 0; --i)
             {
-                sum = std::fma(sum, mantissa, C[i]);
+                sum = sum * z2 + C[i];
             }
-            return sum * mantissa * LOG10_2 + static_cast<U>(exp) * LOG10_2;
+            ln_result = sum * z + static_cast<U>(exp) * U(0.6931471805599453);
         }
-        else
-        {
-            static constexpr std::array<U, 6> C = {U(2.885390081777926774316924906839),
-                                                   U(-0.961796693925975860332579281749),
-                                                   U(0.577078017761894161436831772056),
-                                                   U(-0.412116952651449828911216326591),
-                                                   U(0.308539341038336403451042436809),
-                                                   U(-0.237806477670409415221410025403)};
 
-            U sum = C[5];
-            for (int i = 4; i >= 0; --i)
-            {
-                sum = sum * mantissa + C[i];
-            }
-            return (mantissa * sum + static_cast<U>(exp)) * LOG10_2;
-        }
+        return ln_result * LOG10_E;
     }
 
 #ifdef UMATH_CONCEPTS_ENABLED
