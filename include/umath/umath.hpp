@@ -5,6 +5,7 @@
 #include <umath/traits.hpp>
 
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 namespace umath
@@ -693,6 +694,10 @@ public:
         {
             throw std::domain_error("Division by zero in floorDiv");
         }
+        if (x == std::numeric_limits<U>::min() && y == -1)
+        {
+            throw std::domain_error("Integer overflow in floorDiv");
+        }
         U q = x / y;
         U r = x % y;
         if ((r != 0) && ((r < 0) != (y < 0)))
@@ -712,6 +717,10 @@ public:
         if (y == 0)
         {
             throw std::domain_error("Division by zero in floorMod");
+        }
+        if (x == std::numeric_limits<U>::min() && y == -1)
+        {
+            throw std::domain_error("Integer overflow in floorMod");
         }
         U r = x % y;
         if ((r != 0) && ((r < 0) != (y < 0)))
