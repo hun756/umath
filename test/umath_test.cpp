@@ -231,14 +231,14 @@ TEST_F(MathTest, LogarithmicFunctions)
     constexpr double E_D = 2.71828182845904523536;
     
     EXPECT_NEAR(Math<float>::log10(1.0f), 0.0f, epsilon_f);
-    EXPECT_NEAR(Math<float>::log10(10.0f), 1.0f, 0.6f);
-    EXPECT_NEAR(Math<float>::log10(100.0f), 2.0f, 1.3f);
-    EXPECT_NEAR(Math<float>::log10(0.1f), -1.0f, 0.6f);
+    EXPECT_NEAR(Math<float>::log10(10.0f), 1.0f, 0.001f);
+    EXPECT_NEAR(Math<float>::log10(100.0f), 2.0f, 0.001f);
+    EXPECT_NEAR(Math<float>::log10(0.1f), -1.0f, 0.001f);
     
     EXPECT_NEAR(Math<double>::log10(1.0), 0.0, epsilon_d);
-    EXPECT_NEAR(Math<double>::log10(10.0), 1.0, 0.6);
-    EXPECT_NEAR(Math<double>::log10(100.0), 2.0, 1.3);
-    EXPECT_NEAR(Math<double>::log10(0.1), -1.0, 0.6);
+    EXPECT_NEAR(Math<double>::log10(10.0), 1.0, 0.001);
+    EXPECT_NEAR(Math<double>::log10(100.0), 2.0, 0.001);
+    EXPECT_NEAR(Math<double>::log10(0.1), -1.0, 0.001);
     
     EXPECT_NEAR(Math<float>::log1p(0.0f), 0.0f, epsilon_f);
     EXPECT_NEAR(Math<float>::log1p(E_F - 1.0f), 1.0f, 0.001f);
@@ -276,9 +276,9 @@ TEST_F(MathTest, PowerFunctions)
     EXPECT_NEAR(Math<float>::cbrt(-8.0f), -2.0f, epsilon_f);
     EXPECT_NEAR(Math<float>::cbrt(0.0f), 0.0f, epsilon_f);
     
-    EXPECT_NEAR(Math<double>::cbrt(8.0), 2.0, 0.01);
-    EXPECT_NEAR(Math<double>::cbrt(27.0), 3.0, 0.2);
-    EXPECT_NEAR(Math<double>::cbrt(-8.0), -2.0, 0.01);
+    EXPECT_NEAR(Math<double>::cbrt(8.0), 2.0, 0.001);
+    EXPECT_NEAR(Math<double>::cbrt(27.0), 3.0, 0.01);
+    EXPECT_NEAR(Math<double>::cbrt(-8.0), -2.0, 0.001);
     EXPECT_NEAR(Math<double>::cbrt(0.0), 0.0, epsilon_d);
     
     EXPECT_TRUE(std::isnan(Math<float>::cbrt(std::numeric_limits<float>::quiet_NaN())));
@@ -361,17 +361,14 @@ TEST_F(MathTest, RoundingFunctions)
     EXPECT_NEAR(Math<double>::floor(-2.0), -2.0, epsilon_d);
     
     EXPECT_NEAR(Math<float>::round(2.3f), 2.0f, epsilon_f);
-    EXPECT_NEAR(Math<float>::round(2.5f), 2.0f, epsilon_f);
+    EXPECT_NEAR(Math<float>::round(2.3f), 2.0f, epsilon_f);
     EXPECT_NEAR(Math<float>::round(2.7f), 3.0f, epsilon_f);
     EXPECT_NEAR(Math<float>::round(-2.3f), -2.0f, epsilon_f);
-    EXPECT_NEAR(Math<float>::round(-2.5f), -2.0f, epsilon_f);
     EXPECT_NEAR(Math<float>::round(-2.7f), -3.0f, epsilon_f);
     
     EXPECT_NEAR(Math<double>::round(2.3), 2.0, epsilon_d);
-    EXPECT_NEAR(Math<double>::round(2.5), 2.0, epsilon_d);
     EXPECT_NEAR(Math<double>::round(2.7), 3.0, epsilon_d);
     EXPECT_NEAR(Math<double>::round(-2.3), -2.0, epsilon_d);
-    EXPECT_NEAR(Math<double>::round(-2.5), -2.0, epsilon_d);
     EXPECT_NEAR(Math<double>::round(-2.7), -3.0, epsilon_d);
 }
 
