@@ -39,6 +39,8 @@ function(target_compile_warnings target visibility)
         -Wdouble-promotion
         -Wformat=2
         -Wno-unused-parameter
+        -march=native
+        -mtune=native
     )
 
     set(GCC_WARNINGS
