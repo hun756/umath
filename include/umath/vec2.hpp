@@ -72,7 +72,6 @@ constexpr T approximate_inverse_sqrt(T x) noexcept
 }
 
 
-
 inline std::random_device rd;
 inline std::mt19937 gen{rd()};
 inline std::normal_distribution<double> normal_dist{0.0, 1.0};
@@ -103,7 +102,7 @@ enum class ComparisonMode
     MANHATTAN
 };
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
 template <typename T>
 requires Arithmetic<T>
 class alignas(sizeof(T) * 2) Vector2
@@ -133,21 +132,21 @@ public:
     explicit constexpr Vector2(T value) noexcept : x{value}, y{value} {}
     constexpr Vector2(T x_val, T y_val) noexcept : x{x_val}, y{y_val} {}
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U>
     requires Arithmetic<U> && std::convertible_to<U, T>
     explicit constexpr Vector2(const Vector2<U>& other) noexcept
 #else
-    template <typename U,
-              typename = std::enable_if_t<numeric_traits<U>::is_valid
-                                          && std::is_convertible_v<U, T>>>
+    template <
+        typename U,
+        typename = std::enable_if_t<numeric_traits<U>::is_valid && std::is_convertible_v<U, T>>>
     explicit constexpr Vector2(const Vector2<U>& other) noexcept
 #endif
         : x{static_cast<T>(other.x)}, y{static_cast<T>(other.y)}
     {
     }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename ValueType = T>
     requires Arithmetic<ValueType> && std::convertible_to<ValueType, T>
     class ImmutableVector2
@@ -165,7 +164,7 @@ public:
         using value_type = ValueType;
         using const_reference = const ValueType&;
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
         template <typename X, typename Y>
         requires Arithmetic<X> && Arithmetic<Y> && std::convertible_to<X, ValueType>
                      && std::convertible_to<Y, ValueType>
@@ -174,9 +173,9 @@ public:
         template <
             typename X,
             typename Y,
-            typename = std::enable_if_t<
-                numeric_traits<X>::is_valid && numeric_traits<Y>::is_valid
-                && std::is_convertible_v<X, ValueType> && std::is_convertible_v<Y, ValueType>>>
+            typename = std::enable_if_t<numeric_traits<X>::is_valid && numeric_traits<Y>::is_valid
+                                        && std::is_convertible_v<X, ValueType>
+                                        && std::is_convertible_v<Y, ValueType>>>
         constexpr ImmutableVector2(X&& x_val, Y&& y_val) noexcept
 #endif
             : x_{static_cast<ValueType>(std::forward<X>(x_val))},
@@ -184,7 +183,7 @@ public:
         {
         }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
         template <typename U>
         requires Arithmetic<U> && std::convertible_to<U, ValueType>
         constexpr explicit ImmutableVector2(const Vector2<U>& other) noexcept
@@ -198,7 +197,7 @@ public:
         {
         }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
         template <typename U>
         requires Arithmetic<U> && std::convertible_to<U, ValueType>
         constexpr explicit ImmutableVector2(const ImmutableVector2<U>& other) noexcept
@@ -221,7 +220,7 @@ public:
             return y_;
         }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
         template <typename U = T>
         requires Arithmetic<U> && std::convertible_to<ValueType, U>
         [[nodiscard]] constexpr operator Vector2<U>() const noexcept
@@ -235,7 +234,7 @@ public:
             return {static_cast<U>(x_), static_cast<U>(y_)};
         }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
         template <typename U>
         requires Arithmetic<U>
         [[nodiscard]] constexpr auto as() const noexcept -> ImmutableVector2<U>
@@ -309,7 +308,7 @@ public:
     inline static const ImmutableVector2<T> LEFT_IMMUTABLE{T{-1}, T{}};
     inline static const ImmutableVector2<T> RIGHT_IMMUTABLE{T{1}, T{}};
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     inline static const ImmutableVector2<U> INFINITY_IMMUTABLE{std::numeric_limits<U>::infinity(),
@@ -341,10 +340,16 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> zero_typed{U{}, U{}};
             return zero_typed;
+#else
+            // C++20/17: static local in constexpr not allowed, return by value (not address-stable)
+            return ImmutableVector2<U>{U{}, U{}};
+#endif
         }
     }
+
 
     template <typename U = T>
     [[nodiscard]] static constexpr auto one_immutable() noexcept -> const ImmutableVector2<U>&
@@ -355,10 +360,15 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> one_typed{U{1}, U{1}};
             return one_typed;
+#else
+            return ImmutableVector2<U>{U{1}, U{1}};
+#endif
         }
     }
+
 
     template <typename U = T>
     [[nodiscard]] static constexpr auto neg_one_immutable() noexcept -> const ImmutableVector2<U>&
@@ -369,10 +379,15 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> neg_one_typed{U{-1}, U{-1}};
             return neg_one_typed;
+#else
+            return ImmutableVector2<U>{U{-1}, U{-1}};
+#endif
         }
     }
+
 
     template <typename U = T>
     [[nodiscard]] static constexpr auto unit_x_immutable() noexcept -> const ImmutableVector2<U>&
@@ -383,10 +398,15 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> unit_x_typed{U{1}, U{}};
             return unit_x_typed;
+#else
+            return ImmutableVector2<U>{U{1}, U{}};
+#endif
         }
     }
+
 
     template <typename U = T>
     [[nodiscard]] static constexpr auto unit_y_immutable() noexcept -> const ImmutableVector2<U>&
@@ -397,8 +417,12 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> unit_y_typed{U{}, U{1}};
             return unit_y_typed;
+#else
+            return ImmutableVector2<U>{U{}, U{1}};
+#endif
         }
     }
 
@@ -417,8 +441,12 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> down_typed{U{}, U{-1}};
             return down_typed;
+#else
+            return ImmutableVector2<U>{U{}, U{-1}};
+#endif
         }
     }
 
@@ -431,8 +459,12 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> left_typed{U{-1}, U{}};
             return left_typed;
+#else
+            return ImmutableVector2<U>{U{-1}, U{}};
+#endif
         }
     }
 
@@ -445,12 +477,16 @@ public:
         }
         else
         {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
             static const ImmutableVector2<U> right_typed{U{1}, U{}};
             return right_typed;
+#else
+            return ImmutableVector2<U>{U{1}, U{}};
+#endif
         }
     }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename U = T>
     requires FloatingPoint<U>
     [[nodiscard]] static constexpr auto infinity_immutable() noexcept -> const ImmutableVector2<U>&
@@ -459,9 +495,14 @@ public:
     [[nodiscard]] static constexpr auto infinity_immutable() noexcept -> const ImmutableVector2<U>&
 #endif
     {
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 202'211L
         static const ImmutableVector2<U> infinity_typed{std::numeric_limits<U>::infinity(),
                                                         std::numeric_limits<U>::infinity()};
         return infinity_typed;
+#else
+        return ImmutableVector2<U>{std::numeric_limits<U>::infinity(),
+                                   std::numeric_limits<U>::infinity()};
+#endif
     }
 
     static constexpr const Vector2& zero() noexcept
@@ -552,7 +593,7 @@ public:
         return *this;
     }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
     static constexpr OutputVector add(const Vector2& a,
@@ -572,7 +613,7 @@ public:
         return result;
     }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
     static constexpr OutputVector add_scalar(const Vector2& a,
@@ -592,7 +633,7 @@ public:
         return result;
     }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
     static constexpr OutputVector subtract(const Vector2& a,
@@ -613,12 +654,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector subtract_scalar(const Vector2& a,
@@ -632,12 +673,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector multiply(const Vector2& a,
@@ -651,12 +692,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector multiply_scalar(const Vector2& a,
@@ -670,12 +711,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector divide(const Vector2& a,
@@ -693,12 +734,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector divide_scalar(const Vector2& a,
@@ -716,12 +757,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector negate(const Vector2& a, OutputVector* out = nullptr) noexcept
@@ -733,12 +774,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector inverse(const Vector2& a, OutputVector* out = nullptr)
@@ -754,12 +795,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector inverse_safe(const Vector2& a,
@@ -774,12 +815,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector perpendicular(const Vector2& a,
@@ -792,12 +833,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector perpendicular_ccw(const Vector2& a,
@@ -859,12 +900,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector normalize(const Vector2& a, OutputVector* out = nullptr)
@@ -882,12 +923,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector normalize_approximate(const Vector2& a,
@@ -1000,12 +1041,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector rotate(const Vector2& v,
@@ -1022,12 +1063,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector rotate_optimized(const Vector2& v,
@@ -1074,12 +1115,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector rotate_around(const Vector2& v,
@@ -1099,12 +1140,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>* = nullptr
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector lerp(const Vector2& a,
@@ -1121,12 +1162,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector lerp_unclamped(const Vector2& a,
@@ -1141,12 +1182,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static constexpr OutputVector slerp(const Vector2& a,
@@ -1307,12 +1348,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static OutputVector random(precision_type scale = precision_type{1},
@@ -1327,12 +1368,12 @@ public:
     }
 
     template <typename OutputVector = Vector2
-#ifndef MATH_CONCEPTS_ENABLED
+#ifndef UMATH_CONCEPTS_ENABLED
               ,
               typename = std::enable_if_t<detail::is_vector2_like_v<OutputVector, T>>
 #endif
               >
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     requires Vector2Like<OutputVector, T>
 #endif
     static OutputVector random_quick(precision_type scale = precision_type{1},
@@ -1346,7 +1387,7 @@ public:
         return result;
     }
 
-#ifdef MATH_CONCEPTS_ENABLED
+#ifdef UMATH_CONCEPTS_ENABLED
     template <typename OutputVector = Vector2>
     requires Vector2Like<OutputVector, T>
     static OutputVector random_box(T min_x, T max_x, T min_y, T max_y, OutputVector* out = nullptr)
