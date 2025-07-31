@@ -7,19 +7,10 @@
 #include <unordered_set>
 
 using namespace umath;
-using ::testing::_;
 using ::testing::AtLeast;
-using ::testing::DoubleEq;
-using ::testing::DoubleNear;
-using ::testing::FloatEq;
-using ::testing::FloatNear;
 using ::testing::InSequence;
 using ::testing::Return;
 
-// Constants
-constexpr float PI_F = 3.14159265358979323846f;
-
-// Mock interface for testing Vector2 with dependency injection patterns
 class IMathCalculator
 {
 public:
@@ -29,7 +20,6 @@ public:
     virtual Vector2f normalize(const Vector2f& v) = 0;
 };
 
-// Mock implementation using Google Mock
 class MockMathCalculator : public IMathCalculator
 {
 public:
@@ -38,7 +28,6 @@ public:
     MOCK_METHOD(Vector2f, normalize, (const Vector2f& v), (override));
 };
 
-// Sample class that uses Vector2 and can be tested with mocks
 class VectorProcessor
 {
 private:
@@ -192,7 +181,7 @@ TEST_F(Vector2Test, ScalarDivision)
 
 TEST_F(Vector2Test, ScalarDivisionByZero)
 {
-    EXPECT_THROW(v1 / 0.0f, std::runtime_error);
+    EXPECT_THROW({ [[maybe_unused]] auto result = v1 / 0.0f; }, std::runtime_error);
 }
 
 TEST_F(Vector2Test, ComponentWiseDivision)
@@ -206,7 +195,7 @@ TEST_F(Vector2Test, ComponentWiseDivision)
 TEST_F(Vector2Test, ComponentWiseDivisionByZero)
 {
     Vector2f divisor(0.0f, 4.0f);
-    EXPECT_THROW(v1 / divisor, std::runtime_error);
+    EXPECT_THROW({ [[maybe_unused]] auto result = v1 / divisor; }, std::runtime_error);
 }
 
 TEST_F(Vector2Test, UnaryMinus)
@@ -901,8 +890,7 @@ TEST_F(Vector2Test, VeryLargeNumbers)
 
     Vector2f edge_vec(std::numeric_limits<float>::max() * 0.1f,
                       std::numeric_limits<float>::max() * 0.1f);
-    auto length = edge_vec.length();
-    (void)length;
+    [[maybe_unused]] auto length = edge_vec.length();
 }
 
 class MockTests : public ::testing::Test
