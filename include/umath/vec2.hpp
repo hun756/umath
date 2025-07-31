@@ -82,6 +82,13 @@ constexpr double PI = constants::pi<double>;
 constexpr double HALF_PI = constants::half_pi<double>;
 constexpr double TWO_PI = constants::two_pi<double>;
 
+template<typename T>
+constexpr T pi_v = constants::pi<T>;
+template<typename T>
+constexpr T half_pi_v = constants::half_pi<T>;
+template<typename T>
+constexpr T two_pi_v = constants::two_pi<T>;
+
 #ifdef UMATH_CONCEPTS_ENABLED
 template <typename T, typename ValueType = void>
 concept Vector2Like =
@@ -871,7 +878,7 @@ public:
     {
         const auto min_comp = std::min(std::abs(x), std::abs(y));
         const auto max_comp = std::max(std::abs(x), std::abs(y));
-        return static_cast<precision_type>(max_comp + precision_type{0.3} * min_comp);
+        return static_cast<precision_type>(max_comp + static_cast<precision_type>(0.3) * min_comp);
     }
 
     static constexpr T dot(const Vector2& a, const Vector2& b) noexcept
@@ -979,7 +986,7 @@ public:
         const auto dy = std::abs(a.y - b.y);
         const auto min_d = std::min(dx, dy);
         const auto max_d = std::max(dx, dy);
-        return static_cast<precision_type>(max_d + precision_type{0.3} * min_d);
+        return static_cast<precision_type>(max_d + static_cast<precision_type>(0.3) * min_d);
     }
 
     static constexpr T manhattan_distance(const Vector2& a, const Vector2& b) noexcept
@@ -1015,18 +1022,18 @@ public:
         const auto dy = b.y - a.y;
 
         if (dx == T{})
-            return dy > T{} ? HALF_PI : -HALF_PI;
+            return dy > T{} ? half_pi_v<precision_type> : -half_pi_v<precision_type>;
 
         const auto abs_y = std::abs(dy);
         const auto abs_x = std::abs(dx);
         const auto a_val = abs_x > abs_y ? abs_y / abs_x : abs_x / abs_y;
         const auto s = a_val * a_val;
-        auto r = ((-0.0464964749 * s + 0.15931422) * s - 0.327622764) * s * a_val + a_val;
+        auto r = ((static_cast<precision_type>(-0.0464964749) * s + static_cast<precision_type>(0.15931422)) * s - static_cast<precision_type>(0.327622764)) * s * a_val + a_val;
 
         if (abs_y > abs_x)
-            r = HALF_PI - r;
+            r = half_pi_v<precision_type> - r;
         if (dx < T{})
-            r = PI - r;
+            r = pi_v<precision_type> - r;
         if (dy < T{})
             r = -r;
 
@@ -1037,7 +1044,7 @@ public:
     {
         const auto angle_val =
             std::atan2(static_cast<precision_type>(y), static_cast<precision_type>(x));
-        return angle_val < precision_type{} ? angle_val + TWO_PI : angle_val;
+        return angle_val < precision_type{} ? angle_val + two_pi_v<precision_type> : angle_val;
     }
 
     template <typename OutputVector = Vector2
@@ -1075,7 +1082,7 @@ public:
                                                    precision_type angle_rad,
                                                    OutputVector* out = nullptr) noexcept
     {
-        if (std::abs(angle_rad - PI) < epsilon)
+        if (std::abs(angle_rad - pi_v<precision_type>) < epsilon)
         {
             const auto result = OutputVector{-v.x, -v.y};
             if (out)
@@ -1083,7 +1090,7 @@ public:
             return result;
         }
 
-        if (std::abs(angle_rad - HALF_PI) < epsilon)
+        if (std::abs(angle_rad - half_pi_v<precision_type>) < epsilon)
         {
             const auto result = OutputVector{-v.y, v.x};
             if (out)
@@ -1091,7 +1098,7 @@ public:
             return result;
         }
 
-        if (std::abs(angle_rad + HALF_PI) < epsilon)
+        if (std::abs(angle_rad + half_pi_v<precision_type>) < epsilon)
         {
             const auto result = OutputVector{v.y, -v.x};
             if (out)
@@ -1099,7 +1106,7 @@ public:
             return result;
         }
 
-        if (std::abs(angle_rad) < 0.1)
+        if (std::abs(angle_rad) < static_cast<precision_type>(0.1))
         {
             const auto theta2_2 = (angle_rad * angle_rad) / 2;
             const auto s = angle_rad;
@@ -1201,9 +1208,9 @@ public:
         auto angle_diff = angle_a - angle_b;
 
         if (angle_diff < 0)
-            angle_diff += TWO_PI;
-        if (angle_diff > PI)
-            angle_diff -= TWO_PI;
+            angle_diff += two_pi_v<precision_type>;
+        if (angle_diff > pi_v<precision_type>)
+            angle_diff -= two_pi_v<precision_type>;
 
         const auto result_angle = angle_a + angle_diff * clamped_t;
         const auto len_a = a.length();
@@ -1359,8 +1366,8 @@ public:
     static OutputVector random(precision_type scale = precision_type{1},
                                OutputVector* out = nullptr)
     {
-        const auto x = static_cast<T>(detail::normal_dist(detail::gen) * scale);
-        const auto y = static_cast<T>(detail::normal_dist(detail::gen) * scale);
+        const auto x = static_cast<T>(detail::normal_dist(detail::gen) * static_cast<double>(scale));
+        const auto y = static_cast<T>(detail::normal_dist(detail::gen) * static_cast<double>(scale));
         const auto result = OutputVector{x, y};
         if (out)
             *out = result;
@@ -1379,9 +1386,9 @@ public:
     static OutputVector random_quick(precision_type scale = precision_type{1},
                                      OutputVector* out = nullptr)
     {
-        const auto angle = detail::uniform_dist(detail::gen) * TWO_PI;
-        const auto result = OutputVector{static_cast<T>(std::cos(angle) * scale),
-                                         static_cast<T>(std::sin(angle) * scale)};
+        const auto angle = detail::uniform_dist(detail::gen) * two_pi_v<double>;
+        const auto result = OutputVector{static_cast<T>(std::cos(angle) * static_cast<double>(scale)),
+                                         static_cast<T>(std::sin(angle) * static_cast<double>(scale))};
         if (out)
             *out = result;
         return result;

@@ -11,6 +11,8 @@ using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Return;
 
+constexpr float PI_F = static_cast<float>(PI);
+
 class IMathCalculator
 {
 public:
@@ -421,7 +423,7 @@ TEST_F(Vector2Test, AngleBetween)
     Vector2f v_x(1.0f, 0.0f);
     Vector2f v_y(0.0f, 1.0f);
     float angle = Vector2f::angle_between(v_x, v_y);
-    EXPECT_NEAR(angle, static_cast<float>(PI) / 2.0f, epsilon);
+    EXPECT_NEAR(angle, PI_F / 2.0f, epsilon);
 }
 
 TEST_F(Vector2Test, AngleBetweenZeroVector)
@@ -433,7 +435,7 @@ TEST_F(Vector2Test, VectorAngle)
 {
     Vector2f v_45deg(1.0f, 1.0f);
     float angle = v_45deg.angle();
-    EXPECT_NEAR(angle, PI / 4.0f, epsilon);
+    EXPECT_NEAR(angle, PI_F / 4.0f, epsilon);
 }
 
 TEST_F(Vector2Test, FastAngle)
@@ -441,13 +443,13 @@ TEST_F(Vector2Test, FastAngle)
     Vector2f v_from(0.0f, 0.0f);
     Vector2f v_to(1.0f, 1.0f);
     float angle = Vector2f::angle_approximate(v_from, v_to);
-    EXPECT_NEAR(angle, PI / 4.0f, 0.1f);
+    EXPECT_NEAR(angle, PI_F / 4.0f, 0.1f);
 }
 
 TEST_F(Vector2Test, Rotation)
 {
     Vector2f vec(1.0f, 0.0f);
-    auto rotated = Vector2f::rotate(vec, PI / 2.0f);
+    auto rotated = Vector2f::rotate(vec, PI_F / 2.0f);
     EXPECT_NEAR(rotated.x, 0.0f, epsilon);
     EXPECT_NEAR(rotated.y, 1.0f, epsilon);
 }
@@ -455,7 +457,7 @@ TEST_F(Vector2Test, Rotation)
 TEST_F(Vector2Test, FastRotation)
 {
     Vector2f vec(1.0f, 0.0f);
-    auto rotated = Vector2f::rotate_optimized(vec, static_cast<float>(PI) / 2.0f);
+    auto rotated = Vector2f::rotate_optimized(vec, PI_F / 2.0f);
     EXPECT_NEAR(rotated.x, 0.0f, 0.01f);
     EXPECT_NEAR(rotated.y, 1.0f, 0.01f);
 }
@@ -464,7 +466,7 @@ TEST_F(Vector2Test, RotationAroundPivot)
 {
     Vector2f vec(2.0f, 0.0f);
     Vector2f pivot(1.0f, 0.0f);
-    auto rotated = Vector2f::rotate_around(vec, static_cast<float>(PI) / 2.0f, pivot);
+    auto rotated = Vector2f::rotate_around(vec, PI_F / 2.0f, pivot);
     EXPECT_NEAR(rotated.x, 1.0f, epsilon);
     EXPECT_NEAR(rotated.y, 1.0f, epsilon);
 }
@@ -1083,7 +1085,7 @@ TEST_F(Vector2Test, FastOperationsConsistency)
     EXPECT_NEAR(fast_norm.x, regular_norm.x, 0.01f);
     EXPECT_NEAR(fast_norm.y, regular_norm.y, 0.01f);
 
-    float angle = PI / 6.0f;
+    float angle = PI_F / 6.0f;
     auto regular_rot = Vector2f::rotate(vec, angle);
     auto fast_rot = Vector2f::rotate_optimized(vec, angle);
     EXPECT_NEAR(fast_rot.x, regular_rot.x, 0.01f);
@@ -1129,7 +1131,7 @@ TEST_F(Vector2Test, GeometricOperations)
     Vector2f center(0.0f, 0.0f);
     Vector2f point(3.0f, 4.0f);
 
-    auto rotated = Vector2f::rotate_around(point, PI / 2.0f, center);
+    auto rotated = Vector2f::rotate_around(point, PI_F / 2.0f, center);
 
     EXPECT_NEAR(center.distance(rotated), center.distance(point), epsilon);
 
